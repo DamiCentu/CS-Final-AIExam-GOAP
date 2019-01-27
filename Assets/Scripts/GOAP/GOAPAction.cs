@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class GOAPAction
 {
-    public Dictionary<string, bool> preconditions { get; private set; }
+    public Dictionary<string, bool> preconditionsBool { get; private set; }
+   public Dictionary<string, int> preconditionsInt { get; private set; }
+
     public Dictionary<string, bool> effectsBool { get; private set; }
     public Dictionary<string, int> effectsInt { get; private set; }
     public string name { get; private set; }
@@ -14,7 +16,9 @@ public class GOAPAction
     {
         this.name = name;
         cost = 1f;
-        preconditions = new Dictionary<string, bool>();
+        preconditionsBool = new Dictionary<string, bool>();
+        preconditionsInt = new Dictionary<string, int>();
+
         effectsBool = new Dictionary<string, bool>();
         effectsInt = new Dictionary<string, int>();
     }
@@ -32,7 +36,12 @@ public class GOAPAction
     }
     public GOAPAction Pre(string s, bool value)
     {
-        preconditions[s] = value;
+        preconditionsBool[s] = value;
+        return this;
+    }
+    public GOAPAction Pre(string s, int value)
+    {
+        preconditionsInt[s] = value;
         return this;
     }
     public GOAPAction Effect(string s, bool value)
@@ -49,8 +58,10 @@ public class GOAPAction
 
     public GOAPAction AddEffect(string s, int value)
     {
-        if(effectsInt[s] == null) effectsInt[s] = 0;
-        effectsInt[s] += value;
+        if (effectsInt.ContainsKey(s)) {
+            effectsInt[s] += value;
+        }
+        effectsInt[s] = value;
         return this;
     }
 

@@ -18,8 +18,10 @@ public class GoapMiniTest : MonoBehaviour
         var seq = AStarNormal<GOAPState>.Run(
             from,
             to,
-            (curr, goal) => goal.boolValues.Count(kv => !kv.In(curr.boolValues)),
-            curr => to.boolValues.All(kv => kv.In(curr.boolValues)),
+            (curr, goal) => goal.boolValues.Count(kv => !kv.In(curr.boolValues))+
+                            goal.intValues.Count(i=> !i.In(curr.intValues)),
+            curr => to.boolValues.All(kv => kv.In(curr.boolValues))&&
+                    to.intValues.All(i => i.In(curr.intValues)),
             curr =>
             {
                 if (watchdog == 0)
@@ -27,11 +29,13 @@ public class GoapMiniTest : MonoBehaviour
                 else
                     watchdog--;
 
-                return actions.Where(action => action.preconditions.All(kv => kv.In(curr.boolValues)))
+                return actions.Where(action => action.preconditionsBool.All(kv => kv.In(curr.boolValues))&& 
+                               action.preconditionsInt.All(k=> k.In(curr.intValues)))
                               .Aggregate(new FList<AStarNormal<GOAPState>.Arc>(), (possibleList, action) =>
                               {
                                   var newState = new GOAPState(curr);
                                   newState.boolValues.UpdateWith(action.effectsBool);
+                                  newState.intValues.UpdateWith(action.effectsInt);
                                   newState.generatingAction = action;
                                   newState.step = curr.step+1;
                                   return possibleList + new AStarNormal<GOAPState>.Arc(newState, action.cost);
