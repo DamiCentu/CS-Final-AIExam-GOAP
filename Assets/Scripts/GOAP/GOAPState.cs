@@ -19,7 +19,7 @@ public class GOAPState
     public GOAPState(GOAPState source, GOAPAction gen = null)
     {
         SetValues(source.boolValues, boolValues);
-       // SetValues(source.intValues, source.intValues);
+        SetValues(source.intValues, intValues);
         generatingAction = gen;
     }
 
@@ -42,7 +42,9 @@ public class GOAPState
             other != null
             && other.generatingAction == generatingAction       //Very important to keep! TODO: REVIEW
             && other.boolValues.Count == boolValues.Count
-            && other.boolValues.All(kv => kv.In(boolValues));
+            && other.boolValues.All(kv => kv.In(boolValues))
+            && other.intValues.Count == intValues.Count
+            && other.intValues.All(kv => kv.In(intValues));
         //&& other.values.All(kv => values.Contains(kv));
         return result;
     }

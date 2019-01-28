@@ -29,13 +29,18 @@ public class GoapMiniTest : MonoBehaviour
                 else
                     watchdog--;
 
-                return actions.Where(action => action.preconditionsBool.All(kv => kv.In(curr.boolValues))&& 
-                               action.preconditionsInt.All(k=> k.In(curr.intValues)))
-                              .Aggregate(new FList<AStarNormal<GOAPState>.Arc>(), (possibleList, action) =>
+                //return actions.Where(action => action.preconditionsBool.All(kv => kv.In(curr.boolValues)) && 
+                              // action.preconditionsInt.All(k=> k.In(curr.intValues)))
+                return actions.Where(action => action.preConditions.All(f => f(curr) == true))
+                             .Aggregate(new FList<AStarNormal<GOAPState>.Arc>(), (possibleList, action) =>
                               {
                                   var newState = new GOAPState(curr);
-                                  newState.boolValues.UpdateWith(action.effectsBool);
-                                  newState.intValues.UpdateWith(action.effectsInt);
+                              //    newState.boolValues.UpdateWith(action.effectsBool);
+                              //    newState.intValues.UpdateWith(action.effectsInt);
+                                  action.effects.ForEach((f) =>
+                                  {
+                                      f(newState);
+                                  });
                                   newState.generatingAction = action;
                                   newState.step = curr.step+1;
                                   return possibleList + new AStarNormal<GOAPState>.Arc(newState, action.cost);

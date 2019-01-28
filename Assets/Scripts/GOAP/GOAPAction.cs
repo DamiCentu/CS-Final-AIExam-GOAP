@@ -6,6 +6,11 @@ public class GOAPAction
 {
     public Dictionary<string, bool> preconditionsBool { get; private set; }
    public Dictionary<string, int> preconditionsInt { get; private set; }
+    public delegate bool PreConditionsDelegate(GOAPState state);
+    public List<PreConditionsDelegate> preConditions;
+
+    public delegate void EffectDelegate(GOAPState state);
+    public List<EffectDelegate> effects;
 
     public Dictionary<string, bool> effectsBool { get; private set; }
     public Dictionary<string, int> effectsInt { get; private set; }
@@ -18,9 +23,11 @@ public class GOAPAction
         cost = 1f;
         preconditionsBool = new Dictionary<string, bool>();
         preconditionsInt = new Dictionary<string, int>();
+        preConditions= new List<PreConditionsDelegate>();
 
         effectsBool = new Dictionary<string, bool>();
         effectsInt = new Dictionary<string, int>();
+        effects = new List<EffectDelegate> ();
     }
 
     public GOAPAction Cost(float cost)
@@ -39,6 +46,15 @@ public class GOAPAction
         preconditionsBool[s] = value;
         return this;
     }
+
+
+    public GOAPAction Pre(PreConditionsDelegate f)
+    {
+        preConditions.Add(f);
+        return this;
+    }
+
+
     public GOAPAction Pre(string s, int value)
     {
         preconditionsInt[s] = value;
@@ -53,6 +69,12 @@ public class GOAPAction
     public GOAPAction Effect(string s, int value)
     {
         effectsInt[s] = value;
+        return this;
+    }
+
+    public GOAPAction Effect(EffectDelegate f)
+    {
+        effects.Add(f);
         return this;
     }
 

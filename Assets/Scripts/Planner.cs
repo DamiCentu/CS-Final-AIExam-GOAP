@@ -64,7 +64,7 @@ public class Planner : MonoBehaviour {
         GOAPState goal = new GOAPState();
         goal.intValues["hasGold"] = 10;
         //goal.values["hasKey"] = true;
-        //goal.values["hasMace"] = true;
+        //goal.boolValues["hasMace"] = true;
 
 		var typeDict = new Dictionary<string, ItemType>() {
 			  { "o", ItemType.Entity }
@@ -111,7 +111,7 @@ public class Planner : MonoBehaviour {
     {
         return new List<GOAPAction>()
         {
-              new GOAPAction("Kill o")
+ /*             new GOAPAction("Kill o")
                 .Cost(100f)
                 .Pre("deadOther", false)
                 .Pre("accessibleOther", true)
@@ -152,13 +152,15 @@ public class Planner : MonoBehaviour {
                 .Pre("accessiblePastaFrola", true)
 
                 .Effect("accessiblePastaFrola", false)
-                .Effect("hasPastaFrola", true)
+                .Effect("hasPastaFrola", true),*/
 
-            , new GOAPAction("Pickup mine")
+             new GOAPAction("Pickup mine")
                 .Cost(1f)					//mine es prioritaria!
-                .Effect("hasGold", 10)
+                .Effect((GOAPState state) => {
+                    state.intValues["hasGold"] += 10;
+                })
 
-            , new GOAPAction("Open d")
+   /*         , new GOAPAction("Open d")
                 .Cost(3f)
                 .Pre("deadDoor", false)
                 .Pre("hasKey", true)
@@ -178,7 +180,7 @@ public class Planner : MonoBehaviour {
                 .Effect("deadMace", true)
                 .Effect("deadDoor", true)
                 .Effect("accessibleKey", true)
-                .Effect("accessiblePastaFrola", true)
+                .Effect("accessiblePastaFrola", true)*/
         };
     }
 
