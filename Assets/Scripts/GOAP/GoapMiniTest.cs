@@ -60,7 +60,7 @@ public class GoapMiniTest : MonoBehaviour
 
     void Start()
     {
-        var actions = new List<GOAPAction>() {
+        /*var actions = new List<GOAPAction>() {
             new GOAPAction("BuildHouse")
                 .Pre("hasWood", true)
                 .Pre("hasHammer", true)
@@ -96,6 +96,6 @@ public class GoapMiniTest : MonoBehaviour
         to.boolValues["houseBuilt"] = true;
         to.boolValues["backPain"] = false;
 
-        GoapRun(from, to, actions);
+        GoapRun(from, to, actions);*/
 	}
 }

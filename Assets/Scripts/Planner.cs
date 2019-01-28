@@ -45,8 +45,8 @@ public class Planner : MonoBehaviour {
         //Chequeo los booleanos para cada Item, generando mi modelo de mundo (mi diccionario de bools) en ObservedState
 		Check(observedState, "Key"			, ItemType.Key);
 		Check(observedState, "Other"		, ItemType.Entity);
-		Check(observedState, "Mace"		    , ItemType.Mine);
-        Check(observedState, "Mine", ItemType.Mace);
+		Check(observedState, "Mace"		    , ItemType.Mace);
+        Check(observedState, "Mine", ItemType.Mine);
         Check(observedState, "PastaFrola"	, ItemType.PastaFrola);
 		Check(observedState, "Door"	        , ItemType.Door);
 
