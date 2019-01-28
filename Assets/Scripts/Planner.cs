@@ -59,11 +59,10 @@ public class Planner : MonoBehaviour {
 
         GOAPState initial = new GOAPState();
 		initial.boolValues = observedState; //le asigno los valores actuales, conseguidos antes
-		initial.boolValues["hasGold"] = false; //agrego el bool "doorOpen"
-        initial.boolValues["accessibleMine"] = true;
+		initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"
 
         GOAPState goal = new GOAPState();
-        goal.boolValues["hasGold"] = true;
+        goal.intValues["hasGold"] = 10;
         //goal.values["hasKey"] = true;
         //goal.values["hasMace"] = true;
 
@@ -157,11 +156,7 @@ public class Planner : MonoBehaviour {
 
             , new GOAPAction("Pickup mine")
                 .Cost(1f)					//mine es prioritaria!
-
-                .Pre("accessibleMine", true)
-
-                .Effect("accessibleMine", false)
-                .Effect("hasGold", true)
+                .Effect("hasGold", 10)
 
             , new GOAPAction("Open d")
                 .Cost(3f)
