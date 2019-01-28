@@ -118,17 +118,20 @@ public class Entity : MonoBehaviour
         }
         else if (col.collider.tag == "Wall")
             OnHitWall(this, col.collider.transform);
-        else
+       /* else
         {
             var item = col.collider.GetComponentInParent<Item>();
             if (item)
                 OnHitItem(this, item);
-        }
+        }*/
     }
 
     void OnTriggerEnter(Collider other)
     {
         var e = other.GetComponent<Entity>();
+        var item = other.GetComponentInParent<Item>();
+        if (item)
+            OnHitItem(this, item);
         if (e != null && e != this)
         {
             Debug.Log(e.name + " hit " + name);

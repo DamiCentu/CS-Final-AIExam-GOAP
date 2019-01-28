@@ -61,10 +61,10 @@ public class Tipito : MonoBehaviour
 	void PerformPickUp(Entity us, Item other) {
 		if(other != _target) return;
 		Debug.Log("Pickup");
-		_ent.AddItem(other);
-        if (other.type == ItemType.Mine) {
-            other.gameObject.SetActive(false);
-        }
+	//	_ent.AddItem(other);
+   //     if (other.type == ItemType.Mine) {
+    //        other.gameObject.SetActive(false);
+   //     }
 		_fsm.Feed(TipitoAction.NextStep);
 	}
 

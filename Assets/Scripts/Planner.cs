@@ -62,7 +62,7 @@ public class Planner : MonoBehaviour {
 		initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"
 
         GOAPState goal = new GOAPState();
-        goal.intValues["hasGold"] = 10;
+        goal.intValues["hasGold"] = 20;
         //goal.values["hasKey"] = true;
         //goal.boolValues["hasMace"] = true;
 
