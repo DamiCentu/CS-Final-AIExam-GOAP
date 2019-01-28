@@ -15,7 +15,8 @@ public enum TipitoAction
 	NextStep,
 	FailedStep,
 	Open,
-	Success
+	Success,
+    Create
 }
 
 public class Tipito : MonoBehaviour
@@ -68,7 +69,19 @@ public class Tipito : MonoBehaviour
 		_fsm.Feed(TipitoAction.NextStep);
 	}
 
-	void NextStep(Entity ent, Waypoint wp, bool reached) {
+    void PerformCreate(Entity us, Item other)
+    {
+        if (other != _target) return;
+        Debug.Log("Create");
+        //	_ent.AddItem(other);
+        if (other.type == ItemType.Defense) {
+            var defense = other.GetComponent<Defense>();
+            defense.Create();
+        }
+        _fsm.Feed(TipitoAction.NextStep);
+    }
+
+    void NextStep(Entity ent, Waypoint wp, bool reached) {
 		Debug.Log("On reach target Next step");
 		_fsm.Feed(TipitoAction.NextStep);
 	}
@@ -82,6 +95,7 @@ public class Tipito : MonoBehaviour
         var failStep = new State<TipitoAction>("failStep");
         var kill = new State<TipitoAction>("kill");
         var pickup = new State<TipitoAction>("pickup");
+        var create = new State<TipitoAction>("create");
         var open = new State<TipitoAction>("open");
         var success = new State<TipitoAction>("success");
 
@@ -100,7 +114,10 @@ public class Tipito : MonoBehaviour
 		open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
 		open.OnExit += a => _ent.OnHitItem -= PerformOpen;
 
-		planStep.OnEnter += a => {
+        create.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformCreate; };
+        create.OnExit += a => _ent.OnHitItem -= PerformCreate;
+
+        planStep.OnEnter += a => {
 			Debug.Log("Plan next step");
 			var step = _plan.FirstOrDefault();
 			if(step != null) {
@@ -117,7 +134,8 @@ public class Tipito : MonoBehaviour
 			}
 		};
 
-		success.OnEnter += a => { Debug.Log("Success"); };
+
+        success.OnEnter += a => { Debug.Log("Success"); };
 		success.OnUpdate += () => { _ent.Jump(); };
 		
 		StateConfigurer.Create(any)
@@ -128,6 +146,7 @@ public class Tipito : MonoBehaviour
 		StateConfigurer.Create(planStep)
             .SetTransition(TipitoAction.Kill, kill)
             .SetTransition(TipitoAction.PickUp, pickup)
+            .SetTransition(TipitoAction.Create, create)
             .SetTransition(TipitoAction.Open, open)
             .SetTransition(TipitoAction.Success, success)
 			.Done();
