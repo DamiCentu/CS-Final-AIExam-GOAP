@@ -16,7 +16,9 @@ public enum TipitoAction
 	FailedStep,
 	Open,
 	Success,
-    Create
+    Create,
+    Upgrade,
+    Attack
 }
 
 public class Tipito : MonoBehaviour
@@ -77,6 +79,31 @@ public class Tipito : MonoBehaviour
         if (other.type == ItemType.Defense) {
             var defense = other.GetComponent<Defense>();
             defense.Create();
+        }
+
+        if (other.type == ItemType.Cannon)
+        {
+            var cannon = other.GetComponent<Cannon>();
+            cannon.Create();
+        }
+        _fsm.Feed(TipitoAction.NextStep);
+    }
+
+    void PerformUpgrade(Entity us, Item other)
+    {
+        if (other != _target) return;
+        Debug.Log("Upgrade");
+        //	_ent.AddItem(other);
+        if (other.type == ItemType.Defense)
+        {
+            var defense = other.GetComponent<Defense>();
+            defense.Upgrade();
+        }
+
+        if (other.type == ItemType.Cannon)
+        {
+            var cannon = other.GetComponent<Cannon>();
+            cannon.Upgrade();
         }
         _fsm.Feed(TipitoAction.NextStep);
     }

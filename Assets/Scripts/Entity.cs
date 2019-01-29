@@ -217,9 +217,9 @@ public class Entity : MonoBehaviour
 					.Select(a => new AStarNormal<Waypoint>.Arc(a, Vector3.Distance(a.transform.position, w.transform.position)))
 			);
 			if(path != null) {
-				Debug.Log("COUNT" + path.Count());
+	//			Debug.Log("COUNT" + path.Count());
 				foreach(var next in path.Select(w => FloorPos(w))) {
-					Debug.Log("NEXT "+ next.ToString());
+		//			Debug.Log("NEXT "+ next.ToString());
 
 					while((next - FloorPos(this)).sqrMagnitude >= 0.05f) {
 						_vel = (next - FloorPos(this)).normalized;

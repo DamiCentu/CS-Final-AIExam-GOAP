@@ -42,45 +42,44 @@ public class Planner : MonoBehaviour {
 		var inventory = nav.AllInventories();
 		var everything = nav.AllItems().Union(nav.AllInventories());
 
-        //Chequeo los booleanos para cada Item, generando mi modelo de mundo (mi diccionario de bools) en ObservedState
-	//	Check(observedState, "Key"			, ItemType.Key);
-	//	Check(observedState, "Other"		, ItemType.Entity);
-	//	Check(observedState, "Mace"		    , ItemType.Mace);
         Check(observedState, "Mine", ItemType.Mine);
       //  Check(observedState, "PastaFrola"	, ItemType.PastaFrola);
 		Check(observedState, "Defense"	        , ItemType.Defense);
+        Check(observedState, "Cannon", ItemType.Cannon);
 
-		foreach(var kv in observedState.OrderBy(x => x.Key))
+
+        foreach (var kv in observedState.OrderBy(x => x.Key))
         {
-			Debug.Log(string.Format("{0:12} : {1}", kv.Key, kv.Value));
+	//		Debug.Log(string.Format("{0:12} : {1}", kv.Key, kv.Value));
 		}
 
         List<GOAPAction> actions = CreatePossibleActionsList();
 
         GOAPState initial = new GOAPState();
 		initial.boolValues = observedState; //le asigno los valores actuales, conseguidos antes
-		initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"
-     //   initial.boolValues["hasDefense"] = false;
+		initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
+        initial.boolValues["hasDefense"] = false;
+        initial.boolValues["hasCannon"] = false;
 
         GOAPState goal = new GOAPState();
-        goal.boolValues["hasDefense"] = true;
-        //goal.values["hasKey"] = true;
+      //  goal.boolValues["hasDefense"] = true;
+        goal.boolValues["hasCannon"] = true;
+      //  goal.intValues["hasGold"] = 20;
         //goal.boolValues["hasMace"] = true;
 
         var typeDict = new Dictionary<string, ItemType>() {
-			  { "o", ItemType.Entity }
-			, { "k", ItemType.Key }
-			, { "d", ItemType.Door }
-			, { "m", ItemType.Mace }
-            , { "mine", ItemType.Mine }
+
+             { "mine", ItemType.Mine }
             , { "defense", ItemType.Defense }
-		};
+            , { "cannon", ItemType.Cannon }
+            , { "core", ItemType.Core }
+        };
 		var actDict = new Dictionary<string, TipitoAction>() {
-			  { "Kill"	, TipitoAction.Kill }
-			, { "Pickup", TipitoAction.PickUp }
+			 { "Pickup", TipitoAction.PickUp }
             , { "Create", TipitoAction.Create }
-            , { "Open"	, TipitoAction.Open }
-		};
+            , { "Upgrade", TipitoAction.Upgrade }
+            , { "Attack", TipitoAction.Attack }
+        };
 
 		var plan = GoapMiniTest.GoapRun(initial, goal, actions);
 
@@ -159,16 +158,25 @@ public class Planner : MonoBehaviour {
              new GOAPAction("Pickup mine")
                 .Cost(1f)					//mine es prioritaria!
                 .Effect((GOAPState state) => {
-                    state.intValues["hasGold"] += 10;
+                    state.intValues["hasGold"] += 20;
                 }),
 
-             new GOAPAction("Create defense")				//mine es prioritaria!
+             new GOAPAction("Create defense")				
                 .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 10;
+                    return state.intValues["hasGold"] >= 20;
                 })
                 .Effect((GOAPState state) => {
                     state.boolValues["hasDefense"] = true;
-                    state.intValues["hasGold"] -=10;
+                    state.intValues["hasGold"] -=20;
+                }),
+
+             new GOAPAction("Create cannon")				
+                .Pre((GOAPState state) => {
+                    return state.intValues["hasGold"] >= 30;
+                })
+                .Effect((GOAPState state) => {
+                    state.boolValues["hasCannon"] = true;
+                    state.intValues["hasGold"] -=30;
                 })
 
    /*         , new GOAPAction("Open d")

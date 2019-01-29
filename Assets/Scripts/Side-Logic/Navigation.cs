@@ -44,7 +44,7 @@ public class Navigation : MonoBehaviour
 
 			wp = path.Last();
 		}
-		Debug.Log("Reachable from " + wp.name);
+	//	Debug.Log("Reachable from " + wp.name);
 		if(debugRayList != null) debugRayList.Add(Tuple.Create(wp.transform.position, to));
 
 		var delta = (to - wp.transform.position);

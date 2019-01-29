@@ -10,7 +10,9 @@ public enum ItemType
 	Mace,
 	PastaFrola,
     Mine,
-    Defense
+    Defense,
+    Cannon,
+    Core
 }
 
 public class Item : MonoBehaviour

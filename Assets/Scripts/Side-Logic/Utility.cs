@@ -8,7 +8,7 @@ public static class Utility
 {
     public static T Log<T>(T value, string prefix = "")
     {
-        Debug.Log(prefix + value);
+    //    Debug.Log(prefix + value);
         return value;
     }
 
