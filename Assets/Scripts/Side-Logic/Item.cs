@@ -5,7 +5,7 @@ public enum ItemType
 {
 	Invalid,
 	Key,
-	Door,
+	WaitZone,
 	Entity,
 	Mace,
 	PastaFrola,

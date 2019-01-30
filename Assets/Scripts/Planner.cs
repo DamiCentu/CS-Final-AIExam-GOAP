@@ -44,7 +44,7 @@ public class Planner : MonoBehaviour {
 
         Check(observedState, "Mine", ItemType.Mine);
       //  Check(observedState, "PastaFrola"	, ItemType.PastaFrola);
-		Check(observedState, "Defense"	        , ItemType.Defense);
+		Check(observedState, "Defense", ItemType.Defense);
         Check(observedState, "Cannon", ItemType.Cannon);
 
 
@@ -58,13 +58,17 @@ public class Planner : MonoBehaviour {
         GOAPState initial = new GOAPState();
 		initial.boolValues = observedState; //le asigno los valores actuales, conseguidos antes
 		initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
+        initial.intValues["waitTime"] = 0;
         initial.boolValues["hasDefense"] = false;
         initial.boolValues["hasCannon"] = false;
+        initial.boolValues["UpgradeCannon"] = false;
+        initial.boolValues["UpgradeDefense"] = false;
 
         GOAPState goal = new GOAPState();
-      //  goal.boolValues["hasDefense"] = true;
-        goal.boolValues["hasCannon"] = true;
-      //  goal.intValues["hasGold"] = 20;
+        goal.boolValues["UpgradeCannon"] = true;
+        goal.boolValues["UpgradeDefense"] = true;
+        ;
+        //  goal.intValues["hasGold"] = 20;
         //goal.boolValues["hasMace"] = true;
 
         var typeDict = new Dictionary<string, ItemType>() {
@@ -73,12 +77,14 @@ public class Planner : MonoBehaviour {
             , { "defense", ItemType.Defense }
             , { "cannon", ItemType.Cannon }
             , { "core", ItemType.Core }
+            , { "waitZone", ItemType.WaitZone }
         };
 		var actDict = new Dictionary<string, TipitoAction>() {
 			 { "Pickup", TipitoAction.PickUp }
             , { "Create", TipitoAction.Create }
             , { "Upgrade", TipitoAction.Upgrade }
             , { "Attack", TipitoAction.Attack }
+            , { "Wait", TipitoAction.Wait }
         };
 
 		var plan = GoapMiniTest.GoapRun(initial, goal, actions);
@@ -112,53 +118,20 @@ public class Planner : MonoBehaviour {
     {
         return new List<GOAPAction>()
         {
- /*             new GOAPAction("Kill o")
-                .Cost(100f)
-                .Pre("deadOther", false)
-                .Pre("accessibleOther", true)
-                .Pre("hasMace", true)
-
-                .Effect("deadOther", true)
-
-            , new GOAPAction("Loot k")
-                .Cost(1f)
-                .Pre("otherHasKey", true)
-                .Pre("deadOther", true)
-
-                .Effect("accessibleKey", true)
-                .Effect("otherHasKey", false)
-
-            , new GOAPAction("Pickup m")
-                .Cost(2f)
-                .Pre("deadMace", false)
-                .Pre("otherHasMace", false)
-                .Pre("accessibleMace", true)
-
-                .Effect("accessibleMace", false)
-                .Effect("hasMace", true)
-
-            , new GOAPAction("Pickup k")
-                .Cost(2f)
-                .Pre("deadKey", false)
-                .Pre("otherHasKey", false)
-                .Pre("accessibleKey", true)
-
-                .Effect("accessibleKey", false)
-                .Effect("hasKey", true)
-
-            , new GOAPAction("Pickup pf")
-                .Cost(1f)					//La frola es prioritaria!
-				.Pre("deadPastaFrola", false)
-                .Pre("otherHasPastaFrola", false)
-                .Pre("accessiblePastaFrola", true)
-
-                .Effect("accessiblePastaFrola", false)
-                .Effect("hasPastaFrola", true),*/
 
              new GOAPAction("Pickup mine")
-                .Cost(1f)					//mine es prioritaria!
+                .Pre((GOAPState state) => {
+                    return state.intValues["waitTime"] == 1;
+                })
                 .Effect((GOAPState state) => {
-                    state.intValues["hasGold"] += 20;
+                    state.intValues["hasGold"] += 1000;
+                    state.intValues["waitTime"] -=1;
+                }),
+
+              new GOAPAction("Wait waitZone")
+               					//mine es prioritaria!
+                .Effect((GOAPState state) => {
+                    state.intValues["waitTime"] += 1;
                 }),
 
              new GOAPAction("Create defense")				
@@ -177,29 +150,27 @@ public class Planner : MonoBehaviour {
                 .Effect((GOAPState state) => {
                     state.boolValues["hasCannon"] = true;
                     state.intValues["hasGold"] -=30;
+                }),
+
+              new GOAPAction("Upgrade defense")
+                .Pre((GOAPState state) => {
+                    return state.intValues["hasGold"] >= 40 && 
+                    state.boolValues["hasDefense"] == true;
                 })
+                .Effect((GOAPState state) => {
+                    state.boolValues["UpgradeDefense"] = true;
+                    state.intValues["hasGold"] -=40;
+                }),
 
-   /*         , new GOAPAction("Open d")
-                .Cost(3f)
-                .Pre("deadDoor", false)
-                .Pre("hasKey", true)
-
-                .Effect("hasKey", false)
-                .Effect("doorOpen", true)
-                .Effect("deadKey", true)
-                .Effect("accessiblePastaFrola", true)
-
-            , new GOAPAction("Kill d")
-                .Cost(50f)
-                .Pre("deadDoor", false)
-                .Pre("hasMace", true)
-
-                .Effect("doorOpen", true)
-                .Effect("hasMace", false)
-                .Effect("deadMace", true)
-                .Effect("deadDoor", true)
-                .Effect("accessibleKey", true)
-                .Effect("accessiblePastaFrola", true)*/
+             new GOAPAction("Upgrade cannon")
+                .Pre((GOAPState state) => {
+                    return state.intValues["hasGold"] >= 60 &&
+                    state.boolValues["hasCannon"] == true;
+                })
+                .Effect((GOAPState state) => {
+                    state.boolValues["UpgradeCannon"] = true;
+                    state.intValues["hasGold"] -=60;
+                })
         };
     }
 

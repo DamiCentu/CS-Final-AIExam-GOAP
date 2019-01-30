@@ -18,7 +18,8 @@ public enum TipitoAction
 	Success,
     Create,
     Upgrade,
-    Attack
+    Attack,
+    Wait
 }
 
 public class Tipito : MonoBehaviour
@@ -29,21 +30,6 @@ public class Tipito : MonoBehaviour
 	Entity _ent;
 
 	IEnumerable<Tuple<TipitoAction, Item>> _plan;
-
-	void PerformAttack(Entity us, Item other) {
-		if(other != _target) return;
-		Debug.Log("Attack");
-		
-		var mace = _ent.items.FirstOrDefault(it => it.type == ItemType.Mace);
-		if(mace) {
-			other.Kill();
-			if(other.type == ItemType.Door)
-				Destroy(_ent.Removeitem(mace).gameObject);
-			_fsm.Feed(TipitoAction.NextStep);
-		}
-		else
-			_fsm.Feed(TipitoAction.FailedStep);
-	}
 
 	void PerformOpen(Entity us, Item other) {
 		if(other != _target) return;
@@ -62,7 +48,8 @@ public class Tipito : MonoBehaviour
 	}
 
 	void PerformPickUp(Entity us, Item other) {
-		if(other != _target) return;
+		if(other != _target)
+            return;
 		Debug.Log("Pickup");
 	//	_ent.AddItem(other);
    //     if (other.type == ItemType.Mine) {
@@ -86,6 +73,34 @@ public class Tipito : MonoBehaviour
             var cannon = other.GetComponent<Cannon>();
             cannon.Create();
         }
+        _fsm.Feed(TipitoAction.NextStep);
+    }
+
+    void PerformAttack(Entity us, Item other)
+    {
+        if (other != _target) return;
+        Debug.Log("Attack");
+
+        if (other.type == ItemType.Cannon)
+        {
+            var cannon = other.GetComponent<Cannon>();
+            cannon.Attack();
+        }
+        _fsm.Feed(TipitoAction.NextStep);
+    }
+
+    private void PerformWait(Entity arg1, Item arg2)
+    {
+        if (arg2 != _target)
+            return;
+        StartCoroutine(Wait(1.0f));
+    }
+
+    IEnumerator Wait(float waitTime)
+    {
+        print("WaitForSecondse!");
+        yield return new WaitForSeconds(waitTime);
+        print("ya espere!");
         _fsm.Feed(TipitoAction.NextStep);
     }
 
@@ -120,29 +135,49 @@ public class Tipito : MonoBehaviour
         var idle = new State<TipitoAction>("idle");
         var planStep = new State<TipitoAction>("planStep");
         var failStep = new State<TipitoAction>("failStep");
-        var kill = new State<TipitoAction>("kill");
         var pickup = new State<TipitoAction>("pickup");
         var create = new State<TipitoAction>("create");
+        var upgrade = new State<TipitoAction>("upgrade");
+        var attack = new State<TipitoAction>("attack");
         var open = new State<TipitoAction>("open");
         var success = new State<TipitoAction>("success");
+        var wait = new State<TipitoAction>("wait");
 
-		kill.OnEnter += a => {
-			_ent.GoTo(_target.transform.position);
-			_ent.OnHitItem += PerformAttack;
-		};
 
-		kill.OnExit += a => _ent.OnHitItem -= PerformAttack;
+        failStep.OnEnter += a => { _ent.Stop(); Debug.Log("Plan failed"); };
 
-		failStep.OnEnter += a => { _ent.Stop(); Debug.Log("Plan failed"); };
+		pickup.OnEnter += a => {
+            Debug.Log("pickup.OnEnter");
+            _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformPickUp;
+            Debug.Log("pickup.OnEnter finish");
+        };
+        pickup.OnExit += a =>
+        {
 
-		pickup.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformPickUp; };
-		pickup.OnExit += a => _ent.OnHitItem -= PerformPickUp;
+            Debug.Log("pickup.OnExit");
+            _ent.OnHitItem -= PerformPickUp;
+            Debug.Log("pickup.OnExit finish");
+        };
 
-		open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
+        wait.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformWait;
+            print("entro en el wait.onEnter");
+        };
+        wait.OnExit += a => _ent.OnHitItem -= PerformWait;
+        print("entro en el wait.onExit"); 
+
+        open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
 		open.OnExit += a => _ent.OnHitItem -= PerformOpen;
 
         create.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformCreate; };
         create.OnExit += a => _ent.OnHitItem -= PerformCreate;
+
+
+        attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformAttack; };
+        attack.OnExit += a => _ent.OnHitItem -= PerformAttack;
+
+
+        upgrade.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformUpgrade; };
+        upgrade.OnExit += a => _ent.OnHitItem -= PerformUpgrade;
 
         planStep.OnEnter += a => {
 			Debug.Log("Plan next step");
@@ -156,8 +191,10 @@ public class Tipito : MonoBehaviour
 				if(!_fsm.Feed(step.Item1))
 					_target = oldTarget;		//Revert if feed failed.
 			}
-			else {
-				_fsm.Feed(TipitoAction.Success);
+			else
+            {
+                Debug.Log("TipitoAction.Success");
+                _fsm.Feed(TipitoAction.Success);
 			}
 		};
 
@@ -171,9 +208,10 @@ public class Tipito : MonoBehaviour
 			.Done();
 
 		StateConfigurer.Create(planStep)
-            .SetTransition(TipitoAction.Kill, kill)
             .SetTransition(TipitoAction.PickUp, pickup)
             .SetTransition(TipitoAction.Create, create)
+            .SetTransition(TipitoAction.Attack, attack)
+            .SetTransition(TipitoAction.Upgrade, upgrade)
             .SetTransition(TipitoAction.Open, open)
             .SetTransition(TipitoAction.Success, success)
 			.Done();
@@ -181,7 +219,8 @@ public class Tipito : MonoBehaviour
 		_fsm = new EventFSM<TipitoAction>(idle, any);
     }
 
-	public void ExecutePlan(List<Tuple<TipitoAction, Item>> plan) {
+
+    public void ExecutePlan(List<Tuple<TipitoAction, Item>> plan) {
 		_plan = plan;
 		_fsm.Feed(TipitoAction.NextStep);
 	}

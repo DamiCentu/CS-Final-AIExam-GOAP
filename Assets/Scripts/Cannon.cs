@@ -6,13 +6,13 @@ public class Cannon : MonoBehaviour {
 
     public GameObject cannonPrefab;
     public GameObject cannonPrefabUpgrade;
-    public Transform target;
+    public GameObject target;
 
     public void Start()
     {
         cannonPrefab.SetActive(false);
         cannonPrefabUpgrade.SetActive(false);
-        var rotDir = target.position - transform.position;
+        var rotDir = target.transform.position - transform.position;
         this.transform.rotation = Quaternion.LookRotation(rotDir);
     }
     
@@ -26,9 +26,8 @@ public class Cannon : MonoBehaviour {
         cannonPrefabUpgrade.SetActive(true);
     }
 
-    public void Shoot()
+    public void Attack()
     {
-        cannonPrefab.SetActive(false);
-        cannonPrefabUpgrade.SetActive(true);
+        Debug.Log("PIUMMMMM");
     }
 }
