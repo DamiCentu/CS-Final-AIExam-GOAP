@@ -124,7 +124,7 @@ public class Planner : MonoBehaviour {
                     return state.intValues["waitTime"] == 1;
                 })
                 .Effect((GOAPState state) => {
-                    state.intValues["hasGold"] += 1000;
+                    state.intValues["hasGold"] += 100;
                     state.intValues["waitTime"] -=1;
                 }),
 

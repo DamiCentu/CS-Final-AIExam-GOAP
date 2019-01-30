@@ -162,8 +162,9 @@ public class Tipito : MonoBehaviour
         wait.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformWait;
             print("entro en el wait.onEnter");
         };
-        wait.OnExit += a => _ent.OnHitItem -= PerformWait;
-        print("entro en el wait.onExit"); 
+        wait.OnExit += a => { _ent.OnHitItem -= PerformWait;
+        print("entro en el wait.onExit");
+        };
 
         open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
 		open.OnExit += a => _ent.OnHitItem -= PerformOpen;
@@ -207,13 +208,14 @@ public class Tipito : MonoBehaviour
 			.SetTransition(TipitoAction.FailedStep, idle)
 			.Done();
 
-		StateConfigurer.Create(planStep)
+        StateConfigurer.Create(planStep)
             .SetTransition(TipitoAction.PickUp, pickup)
             .SetTransition(TipitoAction.Create, create)
             .SetTransition(TipitoAction.Attack, attack)
             .SetTransition(TipitoAction.Upgrade, upgrade)
             .SetTransition(TipitoAction.Open, open)
             .SetTransition(TipitoAction.Success, success)
+            .SetTransition(TipitoAction.Wait, wait)
 			.Done();
         
 		_fsm = new EventFSM<TipitoAction>(idle, any);
