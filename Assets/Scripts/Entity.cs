@@ -126,7 +126,7 @@ public class Entity : MonoBehaviour
         }*/
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerStay(Collider other)
     {
         var e = other.GetComponent<Entity>();
         var item = other.GetComponentInParent<Item>();

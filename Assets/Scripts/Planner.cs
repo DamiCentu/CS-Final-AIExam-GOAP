@@ -120,20 +120,20 @@ public class Planner : MonoBehaviour {
         {
 
              new GOAPAction("Pickup mine")
-                .Pre((GOAPState state) => {
-                    return state.intValues["waitTime"] == 1;
-                })
+          //      .Pre((GOAPState state) => {
+         //           return state.intValues["waitTime"] == 1;
+      //          })
                 .Effect((GOAPState state) => {
                     state.intValues["hasGold"] += 100;
-                    state.intValues["waitTime"] -=1;
+         //           state.intValues["waitTime"] -=1;
                 }),
 
-              new GOAPAction("Wait waitZone")
+      /*        new GOAPAction("Wait waitZone")
                					//mine es prioritaria!
                 .Effect((GOAPState state) => {
                     state.intValues["waitTime"] += 1;
                 }),
-
+                */
              new GOAPAction("Create defense")				
                 .Pre((GOAPState state) => {
                     return state.intValues["hasGold"] >= 20;

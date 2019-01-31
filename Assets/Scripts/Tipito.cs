@@ -26,7 +26,7 @@ public class Tipito : MonoBehaviour
 {
     EventFSM<TipitoAction> _fsm;
 	Item _target;
-
+    bool insideItem = false;
 	Entity _ent;
 
 	IEnumerable<Tuple<TipitoAction, Item>> _plan;
@@ -48,15 +48,17 @@ public class Tipito : MonoBehaviour
 	}
 
 	void PerformPickUp(Entity us, Item other) {
-		if(other != _target)
+		if(other != _target || insideItem)
             return;
 		Debug.Log("Pickup");
-	//	_ent.AddItem(other);
-   //     if (other.type == ItemType.Mine) {
-    //        other.gameObject.SetActive(false);
-   //     }
-		_fsm.Feed(TipitoAction.NextStep);
-	}
+        //	_ent.AddItem(other);
+        //     if (other.type == ItemType.Mine) {
+        //        other.gameObject.SetActive(false);
+        //     }
+        //	_fsm.Feed(TipitoAction.NextStep);
+        insideItem = true;
+        StartCoroutine(Wait(1.0f));
+    }
 
     void PerformCreate(Entity us, Item other)
     {
@@ -156,11 +158,13 @@ public class Tipito : MonoBehaviour
 
             Debug.Log("pickup.OnExit");
             _ent.OnHitItem -= PerformPickUp;
+            insideItem = false;
             Debug.Log("pickup.OnExit finish");
         };
 
         wait.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformWait;
             print("entro en el wait.onEnter");
+            print(_target);
         };
         wait.OnExit += a => { _ent.OnHitItem -= PerformWait;
         print("entro en el wait.onExit");
