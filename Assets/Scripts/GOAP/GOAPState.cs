@@ -7,6 +7,8 @@ public class GOAPState
 {
     public Dictionary<string, bool> boolValues = new Dictionary<string, bool>();
     public Dictionary<string, int> intValues = new Dictionary<string, int>();
+    public Dictionary<string, bool> strignValues = new Dictionary<string, bool>();
+    public Dictionary<string, int> floatValues = new Dictionary<string, int>();
     public GOAPAction generatingAction = null;
     public int step = 0;
 
@@ -20,6 +22,8 @@ public class GOAPState
     {
         SetValues(source.boolValues, boolValues);
         SetValues(source.intValues, intValues);
+        SetValues(source.strignValues, strignValues);
+        SetValues(source.floatValues, floatValues);
         generatingAction = gen;
     }
 

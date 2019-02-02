@@ -5,7 +5,10 @@ using UnityEngine;
 public class GOAPAction
 {
     public Dictionary<string, bool> preconditionsBool { get; private set; }
-   public Dictionary<string, int> preconditionsInt { get; private set; }
+    public Dictionary<string, int> preconditionsInt { get; private set; }
+    public Dictionary<string, string> preconditionsString { get; private set; }
+    public Dictionary<string, float> preconditionsFloat { get; private set; }
+
     public delegate bool PreConditionsDelegate(GOAPState state);
     public List<PreConditionsDelegate> preConditions;
 
@@ -14,6 +17,10 @@ public class GOAPAction
 
     public Dictionary<string, bool> effectsBool { get; private set; }
     public Dictionary<string, int> effectsInt { get; private set; }
+    public Dictionary<string, string> effectsString { get; private set; }
+    public Dictionary<string, float> effectsFloat { get; private set; }
+
+
     public string name { get; private set; }
     public float cost { get; private set; }
 
@@ -23,10 +30,15 @@ public class GOAPAction
         cost = 1f;
         preconditionsBool = new Dictionary<string, bool>();
         preconditionsInt = new Dictionary<string, int>();
+        preconditionsString = new Dictionary<string, string>();
+        preconditionsFloat = new Dictionary<string, float>();
+
         preConditions= new List<PreConditionsDelegate>();
 
         effectsBool = new Dictionary<string, bool>();
         effectsInt = new Dictionary<string, int>();
+        effectsString = new Dictionary<string, string>();
+        effectsFloat = new Dictionary<string, float>();
         effects = new List<EffectDelegate> ();
     }
 
@@ -41,11 +53,6 @@ public class GOAPAction
         this.cost = cost;
         return this;
     }
-    public GOAPAction Pre(string s, bool value)
-    {
-        preconditionsBool[s] = value;
-        return this;
-    }
 
 
     public GOAPAction Pre(PreConditionsDelegate f)
@@ -53,24 +60,7 @@ public class GOAPAction
         preConditions.Add(f);
         return this;
     }
-
-
-    public GOAPAction Pre(string s, int value)
-    {
-        preconditionsInt[s] = value;
-        return this;
-    }
-    public GOAPAction Effect(string s, bool value)
-    {
-        effectsBool[s] = value;
-        return this;
-    }
-
-    public GOAPAction Effect(string s, int value)
-    {
-        effectsInt[s] = value;
-        return this;
-    }
+    
 
     public GOAPAction Effect(EffectDelegate f)
     {
@@ -78,13 +68,5 @@ public class GOAPAction
         return this;
     }
 
-    public GOAPAction AddEffect(string s, int value)
-    {
-        if (effectsInt.ContainsKey(s)) {
-            effectsInt[s] += value;
-        }
-        effectsInt[s] = value;
-        return this;
-    }
 
 }

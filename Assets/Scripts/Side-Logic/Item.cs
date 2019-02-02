@@ -12,7 +12,8 @@ public enum ItemType
     Mine,
     Defense,
     Cannon,
-    Core
+    Core,
+    WorkTable
 }
 
 public class Item : MonoBehaviour

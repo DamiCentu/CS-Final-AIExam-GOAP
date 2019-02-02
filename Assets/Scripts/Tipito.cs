@@ -75,6 +75,7 @@ public class Tipito : MonoBehaviour
             var cannon = other.GetComponent<Cannon>();
             cannon.Create();
         }
+
         _fsm.Feed(TipitoAction.NextStep);
     }
 
