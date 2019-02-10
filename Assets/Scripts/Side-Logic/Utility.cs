@@ -8,7 +8,7 @@ public static class Utility
 {
     public static T Log<T>(T value, string prefix = "")
     {
-    //    Debug.Log(prefix + value);
+        //    Debug.Log(prefix + value);
         return value;
     }
 
@@ -55,5 +55,18 @@ public static class Utility
         if (!dict.TryGetValue(key, out v))
             dict[key] = v = defaultFactory();
         return v;
+    }
+
+    public static int[] xMoveVector8 = new int[] { 0, 1, 1, 1, 0, -1, -1, -1 };
+    public static int[] yMoveVector8 = new int[] { 1, 1, 0, -1, -1, -1, 0, 1 };
+
+    public static int Clampi(int v, int min, int max)
+    {
+        return v < min ? min : (v > max ? max : v);
+    }
+
+    public static bool InRangeSquared(Vector3 destiny, Vector3 origen, float distance)
+    {
+        return (destiny - origen).sqrMagnitude < distance * distance;
     }
 }
