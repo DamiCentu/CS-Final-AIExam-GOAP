@@ -20,15 +20,15 @@ public class Item : MonoBehaviour
 {
 	public ItemType type;
 	
-	Waypoint _wp;
+	MapNode _mapNode;
 	bool insideInventory;
 
 	public void OnInventoryAdd()
     {
 		Destroy(GetComponent<Rigidbody>());
 		insideInventory = true;
-		if(_wp)
-			_wp.nearbyItems.Remove(this);
+		if(_mapNode != null)
+			_mapNode.nearbyItems.Remove(this);
 	}
 
 	public void OnInventoryRemove()
@@ -39,8 +39,8 @@ public class Item : MonoBehaviour
 
 	void Start ()
     {
-		_wp = Navigation.instance.NearestTo(transform.position);
-		_wp.nearbyItems.Add(this);	
+		_mapNode = Navigation.instance.NearestTo(transform.position);
+		_mapNode.nearbyItems.Add(this);	
 	}
 
 	public void Kill()
@@ -56,7 +56,7 @@ public class Item : MonoBehaviour
 
 	void OnDestroy()
     {
-		_wp.nearbyItems.Remove(this);
+		_mapNode.nearbyItems.Remove(this);
 	}
 
     //Aplcando que podría mejorarse esto?
@@ -64,9 +64,9 @@ public class Item : MonoBehaviour
     {
 		if(!insideInventory)
         {
-			_wp.nearbyItems.Remove(this);
-			_wp = Navigation.instance.NearestTo(transform.position);
-			_wp.nearbyItems.Add(this);
+			_mapNode.nearbyItems.Remove(this);
+			_mapNode = Navigation.instance.NearestTo(transform.position);
+			_mapNode.nearbyItems.Add(this);
 		}
 	}
 }

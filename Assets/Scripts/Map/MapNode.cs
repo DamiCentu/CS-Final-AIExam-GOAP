@@ -5,8 +5,8 @@ using System.Collections.Generic;
 public class MapNode {
 	public Vector3 position;
 	public List<MapNode> adjacent = new List<MapNode>();
-	public bool accessible = false;
-    public bool usedInPath = false;
+    public HashSet<Item> nearbyItems = new HashSet<Item>();
+    public bool accessible = false;
     public float radius = .5f;
 
 	public MapNode() {

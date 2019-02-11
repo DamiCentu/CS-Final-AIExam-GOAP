@@ -17,7 +17,7 @@ public class Entity : MonoBehaviour
 	public event Action<Entity>				OnHitFloor = delegate {};
 	public event Action<Entity, Transform>	OnHitWall = delegate {};
 	public event Action<Entity, Item>		OnHitItem = delegate {};
-	public event Action<Entity, Waypoint, bool>	OnReachDestination = delegate {};
+	public event Action<Entity, MapNode, bool>	OnReachDestination = delegate {};
 
 	public List<Item> initialItems;
 	
@@ -30,8 +30,8 @@ public class Entity : MonoBehaviour
 
 	public float speed = 2f;
 
-	Waypoint _gizmoRealTarget;
-	IEnumerable<Waypoint> _gizmoPath;
+	MapNode _gizmoRealTarget;
+	IEnumerable<MapNode> _gizmoPath;
 
     #region GETTERS & SETTERS
     public IEnumerable<Item> items { get { return _items; } }
@@ -199,26 +199,26 @@ public class Entity : MonoBehaviour
 		var dstWp = Navigation.instance.NearestTo(destination);
 		
 		_gizmoRealTarget = dstWp;
-		Waypoint reachedDst = srcWp;
+		MapNode reachedDst = srcWp;
 
 		if(srcWp != dstWp)
         {
-			var path = _gizmoPath = AStarNormal<Waypoint>.Run(
+			var path = _gizmoPath = AStarNormal<MapNode>.Run(
 				  srcWp
 				, dstWp
-				, (wa, wb) => Vector3.Distance(wa.transform.position, wb.transform.position)
-				, w => w == dstWp
-				, w =>
+				, (mapNodeA, mapNodeB) => Vector3.Distance(mapNodeA.position, mapNodeB.position)
+				, mapNode => mapNode == dstWp
+				, mapNode =>
 					//w.nearbyItems.Any(it => it.type == ItemType.Door)
 					//? null
 					//:
-					w.adyacent
+					mapNode.adjacent
 					//.Where(a => a.nearbyItems.All(it => it.type != ItemType.Door))
-					.Select(a => new AStarNormal<Waypoint>.Arc(a, Vector3.Distance(a.transform.position, w.transform.position)))
+					.Select(a => new AStarNormal<MapNode>.Arc(a, Vector3.Distance(a.position, mapNode.position)))
 			);
 			if(path != null) {
 	//			Debug.Log("COUNT" + path.Count());
-				foreach(var next in path.Select(w => FloorPos(w))) {
+				foreach(var next in path.Select(w => FloorPos(w.position))) {
 		//			Debug.Log("NEXT "+ next.ToString());
 
 					while((next - FloorPos(this)).sqrMagnitude >= 0.05f) {
@@ -253,7 +253,7 @@ public class Entity : MonoBehaviour
             return;
 
         Gizmos.color = color;
-        var points = _gizmoPath.Select(w => FloorPos(w));
+        var points = _gizmoPath.Select(mapNode => FloorPos(mapNode.position));
         Vector3 last = points.First();
         foreach (var p in points.Skip(1))
         {
@@ -261,6 +261,6 @@ public class Entity : MonoBehaviour
             last = p;
         }
         if (_gizmoRealTarget != null)
-            Gizmos.DrawCube(_gizmoRealTarget.transform.position + Vector3.up * 1f, Vector3.one * 0.3f);
+            Gizmos.DrawCube(_gizmoRealTarget.position + Vector3.up * 1f, Vector3.one * 0.3f);
     }
 }

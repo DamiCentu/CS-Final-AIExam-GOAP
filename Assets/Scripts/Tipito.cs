@@ -126,7 +126,7 @@ public class Tipito : MonoBehaviour
         _fsm.Feed(TipitoAction.NextStep);
     }
 
-    void NextStep(Entity ent, Waypoint wp, bool reached) {
+    void NextStep(Entity ent, MapNode wp, bool reached) {
 		Debug.Log("On reach target Next step");
 		_fsm.Feed(TipitoAction.NextStep);
 	}

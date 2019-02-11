@@ -7,50 +7,46 @@ using System;
 public class Navigation : MonoBehaviour
 {
     public static Navigation instance;
-    public List<Waypoint> _waypoints = new List<Waypoint>();
 
-	void Start ()
+    Map _map;
+
+    private void Awake()
     {
-		instance = this;
-
-		foreach(Transform xf in transform)
-        {
-			var wp = xf.GetComponent<Waypoint>();
-			if(wp != null)
-				_waypoints.Add(wp);
-		}
-	}
+        instance = this;
+        _map = GetComponent<Map>();
+        _map.Build();
+    }
 
 	public bool Reachable(Vector3 from, Vector3 to, List<Tuple<Vector3, Vector3>> debugRayList)
     {
 		var srcWp = NearestTo(from);
 		var dstWp = NearestTo(to);
 
-		Waypoint wp = srcWp;
+		MapNode mapNode = srcWp;
 
 		if(srcWp != dstWp) {
-			var path = AStarNormal<Waypoint>.Run(
+			var path = AStarNormal<MapNode>.Run(
 				  srcWp
 				, dstWp
-				, (wa, wb) => Vector3.Distance(wa.transform.position, wb.transform.position)
+				, (wa, wb) => Vector3.Distance(wa.position, wb.position)
 				, w => w == dstWp
 				, w =>
-					w.adyacent
+					w.adjacent
 				//		.Where(a => a.nearbyItems.All(it => it.type != ItemType.Door))
-						.Select(a => new AStarNormal<Waypoint>.Arc(a, Vector3.Distance(a.transform.position, w.transform.position)))
+						.Select(a => new AStarNormal<MapNode>.Arc(a, Vector3.Distance(a.position, w.position)))
 			);
 			if(path == null)
 				return false;
 
-			wp = path.Last();
+			mapNode = path.Last();
 		}
 	//	Debug.Log("Reachable from " + wp.name);
-		if(debugRayList != null) debugRayList.Add(Tuple.Create(wp.transform.position, to));
+		if(debugRayList != null) debugRayList.Add(Tuple.Create(mapNode.position, to));
 
-		var delta = (to - wp.transform.position);
+		var delta = (to - mapNode.position);
 		var distance = delta.magnitude;
 
-		return !Physics.Raycast(wp.transform.position, delta/distance, distance, LayerMask.GetMask(new []{"Blocking"}));
+		return !Physics.Raycast(mapNode.position, delta/distance, distance, LayerMask.GetMask(new []{"Blocking"}));
 	}
 
 	public IEnumerable<Item> AllInventories() {
@@ -64,21 +60,15 @@ public class Navigation : MonoBehaviour
 		return All().Aggregate(FList.Create<Item>(), (a, wp) => a += wp.nearbyItems);
 	}
 
-	public IEnumerable<Waypoint> All() {
-		return _waypoints;
+	public IEnumerable<MapNode> All() {
+		return _map.GetNodes();
 	}
 
-	public Waypoint Random() {
-		return _waypoints[UnityEngine.Random.Range(0, _waypoints.Count)];
+	public MapNode Random() {
+		return _map.GetRandomMapNodeAccesible();
 	}
 
-	public Waypoint NearestTo(Vector3 pos) {
-		return All()
-			.OrderBy(wp => {
-				var d = wp.transform.position - pos;
-				d.y = 0;
-				return d.sqrMagnitude;
-			})
-			.First();
+	public MapNode NearestTo(Vector3 pos) {
+		return _map.FindClosestNode(pos);
 	}
 }
