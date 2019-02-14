@@ -69,4 +69,19 @@ public static class Utility
     {
         return (destiny - origen).sqrMagnitude < distance * distance;
     }
+
+    public static T GetComponentCustom <T> (string type, MonoBehaviour from) where T: MonoBehaviour
+    {
+        return from.GetComponent(type) as T;
+    }
+
+    public static T GetComponentCustomCasted<T>(string type, MonoBehaviour from)
+    {
+        return Cast<T> (from.GetComponent(type));
+    }
+
+    public static T Cast<T>(object o)
+    {
+        return (T)o;
+    }
 }

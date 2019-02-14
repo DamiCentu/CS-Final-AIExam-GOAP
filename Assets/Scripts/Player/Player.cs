@@ -3,9 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class Player : MonoBehaviour {
-    
-	void Start ()
+public class Player : MonoBehaviour
+{
+    Entity _ent;
+
+    void Awake()
+    {
+        _ent = GetComponent<Entity>();
+        if (!_ent)
+            throw new Exception("Entity component null");
+    }
+
+    void Start ()
     {
         EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, (Action)onUpdate);
 	}

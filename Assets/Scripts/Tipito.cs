@@ -22,7 +22,7 @@ public enum TipitoAction
     Wait
 }
 
-public class Tipito : MonoBehaviour
+public class Tipito : PlayerAndIABaseBehaviour
 {
     EventFSM<TipitoAction> _fsm;
 	Item _target;
@@ -31,24 +31,24 @@ public class Tipito : MonoBehaviour
 
 	IEnumerable<Tuple<TipitoAction, Item>> _plan;
 
-	void PerformOpen(Entity us, Item other) {
-		if(other != _target) return;
+    protected override void PerformOpen(Entity ent, Item item) {
+		if(item != _target) return;
 		Debug.Log("Open");
 		
-		var key = _ent.items.FirstOrDefault(it => it.type == ItemType.Key);
-		var door = other.GetComponent<Door>();
+		var key = ent.items.FirstOrDefault(it => it.type == ItemType.Key);
+		var door = item.GetComponent<Door>();
 		if(door && key) {
 			door.Open();
 			//Consume key
-			Destroy(_ent.Removeitem(key).gameObject);
+			Destroy(ent.Removeitem(key).gameObject);
 			_fsm.Feed(TipitoAction.NextStep);
 		}
 		else
 			_fsm.Feed(TipitoAction.FailedStep);
 	}
 
-	void PerformPickUp(Entity us, Item other) {
-		if(other != _target || insideItem)
+    protected override void PerformPickUp(Entity ent, Item item) {
+		if(item != _target || insideItem)
             return;
 		Debug.Log("Pickup");
         //	_ent.AddItem(other);
@@ -60,41 +60,41 @@ public class Tipito : MonoBehaviour
         StartCoroutine(Wait(1.0f));
     }
 
-    void PerformCreate(Entity us, Item other)
+    protected override void PerformCreate(Entity ent, Item item)
     {
-        if (other != _target) return;
+        if (item != _target) return;
         Debug.Log("Create");
         //	_ent.AddItem(other);
-        if (other.type == ItemType.Defense) {
-            var defense = other.GetComponent<Defense>();
+        if (item.type == ItemType.Defense) {
+            var defense = item.GetComponent<Defense>();
             defense.Create();
         }
 
-        if (other.type == ItemType.Cannon)
+        if (item.type == ItemType.Cannon)
         {
-            var cannon = other.GetComponent<Cannon>();
+            var cannon = item.GetComponent<Cannon>();
             cannon.Create();
         }
 
         _fsm.Feed(TipitoAction.NextStep);
     }
 
-    void PerformAttack(Entity us, Item other)
+    protected override void PerformAttack(Entity us, Item item)
     {
-        if (other != _target) return;
+        if (item != _target) return;
         Debug.Log("Attack");
 
-        if (other.type == ItemType.Cannon)
+        if (item.type == ItemType.Cannon)
         {
-            var cannon = other.GetComponent<Cannon>();
+            var cannon = item.GetComponent<Cannon>();
             cannon.Attack();
         }
         _fsm.Feed(TipitoAction.NextStep);
     }
 
-    private void PerformWait(Entity arg1, Item arg2)
+    protected override void PerformWait(Entity ent, Item item)
     {
-        if (arg2 != _target)
+        if (item != _target)
             return;
         StartCoroutine(Wait(1.0f));
     }
@@ -107,20 +107,20 @@ public class Tipito : MonoBehaviour
         _fsm.Feed(TipitoAction.NextStep);
     }
 
-    void PerformUpgrade(Entity us, Item other)
+    protected override void PerformUpgrade(Entity ent, Item item)
     {
-        if (other != _target) return;
+        if (item != _target) return;
         Debug.Log("Upgrade");
         //	_ent.AddItem(other);
-        if (other.type == ItemType.Defense)
+        if (item.type == ItemType.Defense)
         {
-            var defense = other.GetComponent<Defense>();
+            var defense = item.GetComponent<Defense>();
             defense.Upgrade();
         }
 
-        if (other.type == ItemType.Cannon)
+        if (item.type == ItemType.Cannon)
         {
-            var cannon = other.GetComponent<Cannon>();
+            var cannon = item.GetComponent<Cannon>();
             cannon.Upgrade();
         }
         _fsm.Feed(TipitoAction.NextStep);
