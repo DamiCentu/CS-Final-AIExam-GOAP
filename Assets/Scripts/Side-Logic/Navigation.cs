@@ -57,10 +57,10 @@ public class Navigation : MonoBehaviour
 	}
 
 	public IEnumerable<Item> AllItems() {
-		return All().Aggregate(FList.Create<Item>(), (a, wp) => a += wp.nearbyItems);
+		return AllMapNodes().Aggregate(FList.Create<Item>(), (a, wp) => a += wp.nearbyItems);
 	}
 
-	public IEnumerable<MapNode> All() {
+	public IEnumerable<MapNode> AllMapNodes() {
 		return _map.GetNodes();
 	}
 

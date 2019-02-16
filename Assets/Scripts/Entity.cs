@@ -18,8 +18,9 @@ public class Entity : MonoBehaviour
 	public event Action<Entity, Transform>	OnHitWall = delegate {};
 	public event Action<Entity, Item>		OnHitItem = delegate {};
 	public event Action<Entity, MapNode, bool>	OnReachDestination = delegate {};
+    public event Action<Entity,Item> OnReachDestinationWithItem = delegate { };
 
-	public List<Item> initialItems;
+    public List<Item> initialItems;
 	
 	List<Item> _items;
 	Vector3 _vel;
@@ -184,8 +185,8 @@ public class Entity : MonoBehaviour
 	}
 
 	Coroutine _navCR;
-	public void GoTo(Vector3 destination) {
-		_navCR = StartCoroutine(Navigate(destination));
+	public void GoTo(Vector3 destination, Item item = null) {
+		_navCR = StartCoroutine(Navigate(destination, item));
 	}
 
 	public void Stop() {
@@ -193,7 +194,7 @@ public class Entity : MonoBehaviour
 		_vel = Vector3.zero;
 	}
 
-	protected virtual IEnumerator Navigate(Vector3 destination)
+    protected virtual IEnumerator Navigate(Vector3 destination, Item item = null)
     {
 		var srcWp = Navigation.instance.NearestTo(transform.position);
 		var dstWp = Navigation.instance.NearestTo(destination);
@@ -239,7 +240,9 @@ public class Entity : MonoBehaviour
 		
 		_vel = Vector3.zero;
 		OnReachDestination(this, reachedDst, reachedDst == dstWp);
-	}
+        OnReachDestinationWithItem(this, item);
+
+    }
 
 	void Paint(Color color) {
 		foreach(Transform xf in body)

@@ -23,6 +23,8 @@ public class Item : MonoBehaviour
 	MapNode _mapNode;
 	bool insideInventory;
 
+    public int goldValue = 15;
+
 	public void OnInventoryAdd()
     {
 		Destroy(GetComponent<Rigidbody>());
