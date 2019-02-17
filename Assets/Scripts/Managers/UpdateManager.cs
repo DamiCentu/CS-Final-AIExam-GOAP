@@ -10,6 +10,7 @@ public class UpdateManager : MonoBehaviour
     void Awake()
     {
         EventsManager.SubscribeToEvent(EventsConstants.SUBSCRIBE_UPDATE, onSubscribeToUpdate);
+        EventsManager.SubscribeToEvent(EventsConstants.DESUBSCRIBE_UPDATE, onDesubscribeToUpdate);
     }
 
     private void onSubscribeToUpdate(object[] param)

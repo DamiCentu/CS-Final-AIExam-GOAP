@@ -67,7 +67,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         //	_ent.AddItem(other);
         if (item.type == ItemType.Defense) {
             var defense = item.GetComponent<Defense>();
-            defense.Create();
+            defense.Activate();
         }
 
         if (item.type == ItemType.Cannon)

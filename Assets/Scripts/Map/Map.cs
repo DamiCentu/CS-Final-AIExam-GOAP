@@ -115,7 +115,7 @@ public class Map : MonoBehaviour {
     }
     
     public MapNode FindClosestNode(Vector3 point) {
-        return grid.Cast<MapNode>().Where(x=> x != null)
+        return grid.Cast<MapNode>().Where(x=> x != null && x.accessible)
                    .Aggregate(Tuple.Create(new MapNode(float.MaxValue, float.MaxValue, float.MaxValue),float.MaxValue), (a,c) => {
                        var distanceFromActualNodeToPoint = Vector3.Distance(c.position, point);
                        if (distanceFromActualNodeToPoint < a.Item2)

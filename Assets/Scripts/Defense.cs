@@ -14,9 +14,8 @@ public class Defense : MonoBehaviour {
         upgradeDefense.SetActive(false);
     }
 
-    public void Create() {
+    public void Activate() {
         modelDefense.SetActive(true);
-
     }
 
     internal void Upgrade()
