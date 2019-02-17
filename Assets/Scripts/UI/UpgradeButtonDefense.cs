@@ -14,7 +14,8 @@ public class UpgradeButtonDefense : PerformSomethingButtonAbstract
 
     private void OnItemCreated(object[] parameterContainer)
     {
-        _oneItemAtLeastCreated = true;
+        if((ItemType) parameterContainer[0] == ItemType.Defense)
+            _oneItemAtLeastCreated = true;
     }
 
     void PerformUpgrade()

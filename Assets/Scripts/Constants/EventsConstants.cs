@@ -7,7 +7,10 @@ public static class EventsConstants {
     public const string DESUBSCRIBE_UPDATE = "desubscribeUpdate";
 
 
-    public const string UPDATE_GOLD_UI = "updateGoldUI";
+    public const string UI_UPDATE_GOLD = "UIupdateGold";
+
+    public const string SET_MAP_NODE_UNACCESABLE = "mapNodesUpdate";
+
 
 
     public const string PLAYER_REQUEST_CREATE = "playerRequestCreate";
@@ -22,5 +25,6 @@ public static class EventsConstants {
     public const string PLAYER_NOT_ENOUGH_GOLD = "playerNotEnoughGold";
 
     public const string ITEM_CREATED = "itemCreated";
+    public const string ITEM_UPGRADED = "itemUpgraded";
 
 }

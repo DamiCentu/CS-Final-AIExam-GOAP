@@ -12,6 +12,8 @@ public class Player : PlayerAndIABaseBehaviour
     public float timeToPickup = 1f;
     public int goldToCreateDefense = 30;
     public int goldToCreateCannon = 60;
+    public int goldToUpgradeDefense = 30;
+    public int goldToUpgradeCannon = 45;
     Entity _ent;
     Item _target;
 
@@ -37,8 +39,37 @@ public class Player : PlayerAndIABaseBehaviour
     {
         EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, (Action)onUpdate);
 
-        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnCreateDefense);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnCreate);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_UPGRADE, OnUpgrade);
         EventsManager.SubscribeToEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, OnBlockOrUnblockPlayer);
+    }
+
+    private void OnUpgrade(object[] parameterContainer)
+    {
+        if (!_canDoAnythingElse)
+        {
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCUPED);
+            return;
+        }
+
+        if ((ItemType)parameterContainer[0] == ItemType.Defense && _gold >= goldToUpgradeDefense)
+        {
+            _gold -= goldToUpgradeDefense;
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_UPGRADE, new object[] { (ItemType)parameterContainer[0] });
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+        }
+        else if ((ItemType)parameterContainer[0] == ItemType.Cannon && _gold >= goldToUpgradeCannon)
+        {
+            _gold -= goldToUpgradeCannon;
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_UPGRADE, new object[] { (ItemType)parameterContainer[0] });
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+        }
+        else
+        {
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD);
+        }
     }
 
     private void OnBlockOrUnblockPlayer(object[] parameterContainer)
@@ -46,7 +77,7 @@ public class Player : PlayerAndIABaseBehaviour
         _canDoAnythingElse = (bool)parameterContainer[0];
     }
 
-    private void OnCreateDefense(object[] parameterContainer)
+    private void OnCreate(object[] parameterContainer)
     {
         if (!_canDoAnythingElse)
         {
@@ -56,17 +87,17 @@ public class Player : PlayerAndIABaseBehaviour
 
         if ((ItemType)parameterContainer[0] == ItemType.Defense && _gold >= goldToCreateDefense)
         {
-            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
             _gold -= goldToCreateDefense;
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
             EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { (ItemType)parameterContainer[0] });
-            EventsManager.TriggerEvent(EventsConstants.UPDATE_GOLD_UI, new object[] { _gold });
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
         }
         else if ((ItemType)parameterContainer[0] == ItemType.Cannon && _gold >= goldToCreateCannon)
         {
             _gold -= goldToCreateCannon;
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
             EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { (ItemType)parameterContainer[0] });
-            EventsManager.TriggerEvent(EventsConstants.UPDATE_GOLD_UI, new object[] { _gold });
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
         }            
         else
         {
@@ -144,7 +175,7 @@ public class Player : PlayerAndIABaseBehaviour
             if(item)
                 _gold += item.goldValue;
 
-            EventsManager.TriggerEvent(EventsConstants.UPDATE_GOLD_UI, new object[] { _gold });
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
             _ent.OnReachDestinationWithItem -= PerformPickUp;
         }));

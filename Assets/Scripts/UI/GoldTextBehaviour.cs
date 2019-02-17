@@ -12,7 +12,7 @@ public class GoldTextBehaviour : MonoBehaviour {
         if (!_text)
             throw new System.Exception("Text null");
 
-        EventsManager.SubscribeToEvent(EventsConstants.UPDATE_GOLD_UI, OnUpdateGoldUI);
+        EventsManager.SubscribeToEvent(EventsConstants.UI_UPDATE_GOLD, OnUpdateGoldUI);
         _text.text = "Gold: 0";
 	}
 

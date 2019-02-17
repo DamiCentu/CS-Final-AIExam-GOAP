@@ -19,6 +19,19 @@ public class Map : MonoBehaviour {
     Vector3 _positionOfRaycast;
     HashSet<MapNode> _visited = new HashSet<MapNode>();
 
+    private void Awake()
+    {
+        EventsManager.SubscribeToEvent(EventsConstants.SET_MAP_NODE_UNACCESABLE, OnSetMapNodeUnaccesable);
+    }
+
+    private void OnSetMapNodeUnaccesable(object[] parameterContainer)
+    {
+        var node = (MapNode)parameterContainer[0];
+        node.accessible = false;
+        node.adjacent.Clear();
+        grid.Cast<MapNode>().Select(x => x.adjacent.Remove(node));
+    }
+
     public void Build() {
         if (cellSize < 1f) cellSize = 1f;
 

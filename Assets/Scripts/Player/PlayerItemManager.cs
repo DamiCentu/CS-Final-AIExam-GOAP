@@ -11,6 +11,7 @@ public class PlayerItemManager : MonoBehaviour {
 
     public float maxRaycastDistance = 300;
     public LayerMask hoverLayer;
+    public LayerMask clickableLayerOnUpgrade;
 
     public float radiusOfNodesGizmos = 0.2f;
 
@@ -19,6 +20,7 @@ public class PlayerItemManager : MonoBehaviour {
     Camera _cam;
 
     ItemType _lastTipe;
+    IEnumerable<Item> _itemsCreated;
 
     void Start () {
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_CREATE, OnCreate);
@@ -36,7 +38,53 @@ public class PlayerItemManager : MonoBehaviour {
 
     private void OnUpgrade(object[] parameterContainer)
     {
-        throw new NotImplementedException();
+        EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, new object[] { (Action)OnSearchGOForUpgrade });
+
+        if ((ItemType)parameterContainer[0] == ItemType.Defense)
+        {
+            _lastTipe = ItemType.Defense;
+        }
+        else if ((ItemType)parameterContainer[0] == ItemType.Cannon)
+        {
+            _lastTipe = ItemType.Cannon;
+        }
+        else
+        {
+            Debug.Log("Amigo plisss");
+            EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnSearchGOForUpgrade });
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
+        }
+    }
+
+    private void OnSearchGOForUpgrade()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            RaycastHit hit;
+            var ray = _cam.ScreenPointToRay(Input.mousePosition);
+            Debug.DrawRay(ray.origin, ray.direction * maxRaycastDistance, Color.yellow, Time.deltaTime);
+
+            if (Physics.Raycast(ray, out hit, maxRaycastDistance, clickableLayerOnUpgrade))
+            {
+                var itemHitted = hit.collider.GetComponent<Item>();
+                if (_lastTipe == itemHitted.type && _lastTipe == ItemType.Defense)
+                {
+                    itemHitted.GetComponent<Defense>().Upgrade();
+                }
+                else if (_lastTipe == itemHitted.type && _lastTipe == ItemType.Cannon)
+                {
+                    itemHitted.GetComponent<Cannon>().Upgrade();
+                }
+
+                Item[] item = new Item[1];
+                item[0] = itemHitted;
+
+                _itemsCreated = _itemsCreated.Concat(item);
+                EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnLockGameObject });
+                EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
+                EventsManager.TriggerEvent(EventsConstants.ITEM_UPGRADED, new object[] { _lastTipe });
+            } 
+        }
     }
 
     private void OnCreate(object[] parameterContainer)
@@ -61,14 +109,12 @@ public class PlayerItemManager : MonoBehaviour {
         }
     }
 
-//     Vector3 debug = new Vector3();
-//     Vector3 debug2 = new Vector3();
-
     void OnLockGameObject()
     {
         RaycastHit hit;
         var ray = _cam.ScreenPointToRay(Input.mousePosition);
         Debug.DrawRay(ray.origin, ray.direction * maxRaycastDistance, Color.yellow, Time.deltaTime);
+        MapNode nearestMapNode = null;
 
         if (Physics.Raycast(ray, out hit, maxRaycastDistance, hoverLayer))
         {
@@ -80,15 +126,23 @@ public class PlayerItemManager : MonoBehaviour {
             {
                 _itemToInstantiate.GetComponent<Cannon>().Activate();
             }
-//             debug = hit.collider.transform.position;
-//             debug2 = _nav.NearestTo(hit.point).position;
-            _itemToInstantiate.transform.position = _nav.NearestTo(hit.point).position;
+
+            nearestMapNode = _nav.NearestTo(hit.point);
+            _itemToInstantiate.transform.position = nearestMapNode.position;
         }
 
         if (Input.GetMouseButtonDown(0))
         {
+            if(nearestMapNode != null)
+                nearestMapNode.accessible = false;
+
+            Item[] item = new Item[1];
+            item[0] = _itemToInstantiate;
+
+            _itemsCreated = _itemsCreated.Concat(item);
             EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnLockGameObject });
             EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, new object[] { (Action)OnRotateGameObject });
+            EventsManager.TriggerEvent(EventsConstants.SET_MAP_NODE_UNACCESABLE, new object[] { nearestMapNode });
         }
     }
 
