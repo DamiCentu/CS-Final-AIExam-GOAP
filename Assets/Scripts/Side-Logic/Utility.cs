@@ -84,4 +84,9 @@ public static class Utility
     {
         return (T)o;
     }
+
+    public static Vector3 SetYInVector3(Vector3 vec, float y)
+    {
+        return new Vector3(vec.x, y, vec.z);
+    }
 }

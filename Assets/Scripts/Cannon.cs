@@ -16,7 +16,7 @@ public class Cannon : MonoBehaviour {
         this.transform.rotation = Quaternion.LookRotation(rotDir);
     }
     
-    public void Create() {
+    public void Activate() {
         cannonPrefab.SetActive(true);
     }
 

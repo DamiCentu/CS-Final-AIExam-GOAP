@@ -150,25 +150,25 @@ public class Player : PlayerAndIABaseBehaviour
         }));
     }
 
-    protected override void PerformCreate(Entity ent, Item item)
-    {
-        if (item != _target) return;
-        Debug.Log("Player create");
-        //	_ent.AddItem(other);
-        if (item.type == ItemType.Defense)
-        {
-            var defense = item.GetComponent<Defense>();
-            defense.Activate();
-        }
-
-        if (item.type == ItemType.Cannon)
-        {
-            var cannon = item.GetComponent<Cannon>();
-            cannon.Create();
-        }
-
-        //_fsm.Feed("");
-    }
+//     protected override void PerformCreate(Entity ent, Item item)
+//     {
+//         if (item != _target) return;
+//         Debug.Log("Player create");
+//         //	_ent.AddItem(other);
+//         if (item.type == ItemType.Defense)
+//         {
+//             var defense = item.GetComponent<Defense>();
+//             defense.Activate();
+//         }
+// 
+//         if (item.type == ItemType.Cannon)
+//         {
+//             var cannon = item.GetComponent<Cannon>();
+//             cannon.Activate();
+//         }
+// 
+//         //_fsm.Feed("");
+//     }
 
     protected override void PerformAttack(Entity us, Item item)
     {

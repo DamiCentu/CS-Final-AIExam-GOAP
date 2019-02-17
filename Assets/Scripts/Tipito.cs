@@ -67,13 +67,13 @@ public class Tipito : PlayerAndIABaseBehaviour
         //	_ent.AddItem(other);
         if (item.type == ItemType.Defense) {
             var defense = item.GetComponent<Defense>();
-            defense.Activate();
+            defense.Activate().Set();
         }
 
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            cannon.Create();
+            cannon.Activate();
         }
 
         _fsm.Feed(TipitoAction.NextStep);

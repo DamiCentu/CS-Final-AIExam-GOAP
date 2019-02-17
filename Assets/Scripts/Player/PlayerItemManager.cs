@@ -15,7 +15,6 @@ public class PlayerItemManager : MonoBehaviour {
     public float radiusOfNodesGizmos = 0.2f;
 
     Item _itemToInstantiate;
-    IEnumerable _allNodes;
     Navigation _nav;
     Camera _cam;
 
@@ -42,7 +41,7 @@ public class PlayerItemManager : MonoBehaviour {
 
     private void OnCreate(object[] parameterContainer)
     {
-        EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, new object[] { (Action)OnUpdate });
+        EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, new object[] { (Action)OnLockGameObject });
 
         if ((ItemType)parameterContainer[0] == ItemType.Defense)
         {
@@ -57,7 +56,7 @@ public class PlayerItemManager : MonoBehaviour {
         else
         {
             Debug.Log("Amigo plisss");
-            EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnUpdate });
+            EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnLockGameObject });
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
         }
     }
@@ -65,7 +64,7 @@ public class PlayerItemManager : MonoBehaviour {
 //     Vector3 debug = new Vector3();
 //     Vector3 debug2 = new Vector3();
 
-    void OnUpdate()
+    void OnLockGameObject()
     {
         RaycastHit hit;
         var ray = _cam.ScreenPointToRay(Input.mousePosition);
@@ -79,16 +78,42 @@ public class PlayerItemManager : MonoBehaviour {
             }
             else if (_lastTipe == ItemType.Cannon)
             {
-                _itemToInstantiate.GetComponent<Cannon>().Create();
+                _itemToInstantiate.GetComponent<Cannon>().Activate();
             }
 //             debug = hit.collider.transform.position;
 //             debug2 = _nav.NearestTo(hit.point).position;
             _itemToInstantiate.transform.position = _nav.NearestTo(hit.point).position;
         }
 
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
-            EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnUpdate });
+            EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnLockGameObject });
+            EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, new object[] { (Action)OnRotateGameObject });
+        }
+    }
+
+    void OnRotateGameObject()
+    {
+        RaycastHit hit;
+        var ray = _cam.ScreenPointToRay(Input.mousePosition);
+        Debug.DrawRay(ray.origin, ray.direction * maxRaycastDistance, Color.yellow, Time.deltaTime);
+
+        if (Physics.Raycast(ray, out hit, maxRaycastDistance, hoverLayer))
+        {
+            _itemToInstantiate.transform.right = Utility.SetYInVector3(hit.point, _itemToInstantiate.transform.position.y) - _itemToInstantiate.transform.position;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (_lastTipe == ItemType.Defense)
+            {
+                _itemToInstantiate.GetComponent<Defense>().Set();
+            }
+            else if (_lastTipe == ItemType.Cannon)
+            {
+                //_itemToInstantiate.GetComponent<Cannon>().Set();
+            }
+            EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnRotateGameObject });
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
             EventsManager.TriggerEvent(EventsConstants.ITEM_CREATED, new object[] { _lastTipe });
         }
