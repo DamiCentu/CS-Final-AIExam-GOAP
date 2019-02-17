@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CreateButtonCannon : PerformCreateAbstract
+public class CreateButtonCannon : PerformSomethingButtonAbstract
 {
     public void PerformCreate()
     {

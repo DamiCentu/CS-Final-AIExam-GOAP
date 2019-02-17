@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class PerformCreateAbstract : MonoBehaviour
+public abstract class PerformSomethingButtonAbstract : MonoBehaviour
 {
     protected void TriggerCreate(string constant, ItemType type)
     {
