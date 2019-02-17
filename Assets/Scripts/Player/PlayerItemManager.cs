@@ -73,7 +73,7 @@ public class PlayerItemManager : MonoBehaviour {
                 }
                 else if (_lastTipe == itemHitted.type && _lastTipe == ItemType.Cannon)
                 {
-                    itemHitted.GetComponent<Cannon>().Upgrade();
+                    //itemHitted.GetComponent<Cannon>().Upgrade();
                 }
 
                 Item[] item = new Item[1];
