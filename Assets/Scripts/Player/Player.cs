@@ -37,8 +37,14 @@ public class Player : PlayerAndIABaseBehaviour
     {
         EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, (Action)onUpdate);
 
-        EventsManager.SubscribeToEvent(EventsConstants.REQUEST_CREATE, OnCreateDefense);
-	}
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnCreateDefense);
+        EventsManager.SubscribeToEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, OnBlockOrUnblockPlayer);
+    }
+
+    private void OnBlockOrUnblockPlayer(object[] parameterContainer)
+    {
+        _canDoAnythingElse = (bool)parameterContainer[0];
+    }
 
     private void OnCreateDefense(object[] parameterContainer)
     {
@@ -50,6 +56,7 @@ public class Player : PlayerAndIABaseBehaviour
 
         if ((ItemType)parameterContainer[0] == ItemType.Defense && _gold >= goldToCreateDefense)
         {
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
             _gold -= goldToCreateDefense;
             EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { (ItemType)parameterContainer[0] });
             EventsManager.TriggerEvent(EventsConstants.UPDATE_GOLD_UI, new object[] { _gold });
@@ -57,6 +64,7 @@ public class Player : PlayerAndIABaseBehaviour
         else if ((ItemType)parameterContainer[0] == ItemType.Cannon && _gold >= goldToCreateCannon)
         {
             _gold -= goldToCreateCannon;
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
             EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { (ItemType)parameterContainer[0] });
             EventsManager.TriggerEvent(EventsConstants.UPDATE_GOLD_UI, new object[] { _gold });
         }            
@@ -93,7 +101,7 @@ public class Player : PlayerAndIABaseBehaviour
         {
             _ent.GoTo(item.transform.position , item);
             _ent.OnReachDestinationWithItem += PerformPickUp;
-            _canDoAnythingElse = false;
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
         }
     }
 
@@ -137,7 +145,7 @@ public class Player : PlayerAndIABaseBehaviour
                 _gold += item.goldValue;
 
             EventsManager.TriggerEvent(EventsConstants.UPDATE_GOLD_UI, new object[] { _gold });
-            _canDoAnythingElse = true;
+            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
             _ent.OnReachDestinationWithItem -= PerformPickUp;
         }));
     }

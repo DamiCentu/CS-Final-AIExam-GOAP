@@ -10,12 +10,17 @@ public static class EventsConstants {
     public const string UPDATE_GOLD_UI = "updateGoldUI";
 
 
-    public const string REQUEST_CREATE = "requestCreate";
-    public const string REQUEST_UPGRADE = "requestUpgrade";
+    public const string PLAYER_REQUEST_CREATE = "playerRequestCreate";
+    public const string PLAYER_REQUEST_UPGRADE = "playerRequestUpgrade";
 
     public const string PLAYER_CREATE = "playerCreate";
     public const string PLAYER_UPGRADE = "playerUpgrade";
 
+    public const string BLOCK_PLAYER_IF_FALSE = "blockOrUnblockPlayer";
+
     public const string PLAYER_OCUPED = "playerOcuped";
     public const string PLAYER_NOT_ENOUGH_GOLD = "playerNotEnoughGold";
+
+    public const string ITEM_CREATED = "itemCreated";
+
 }

@@ -6,6 +6,6 @@ public class CreateButtonDefense : PerformCreateAbstract
 {
     public void PerformCreate()
     {
-        TriggerCreate(EventsConstants.REQUEST_CREATE, ItemType.Defense);
+        TriggerCreate(EventsConstants.PLAYER_REQUEST_CREATE, ItemType.Defense);
     }
 }
