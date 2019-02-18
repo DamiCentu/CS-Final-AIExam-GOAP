@@ -7,8 +7,8 @@ public class GOAPState
 {
     public Dictionary<string, bool> boolValues = new Dictionary<string, bool>();
     public Dictionary<string, int> intValues = new Dictionary<string, int>();
-    public Dictionary<string, bool> strignValues = new Dictionary<string, bool>();
-    public Dictionary<string, int> floatValues = new Dictionary<string, int>();
+    public Dictionary<string, string> strignValues = new Dictionary<string, string>();
+    public Dictionary<string, float> floatValues = new Dictionary<string, float>();
     public GOAPAction generatingAction = null;
     public int step = 0;
 
@@ -48,23 +48,17 @@ public class GOAPState
             && other.boolValues.Count == boolValues.Count
             && other.boolValues.All(kv => kv.In(boolValues))
             && other.intValues.Count == intValues.Count
-            && other.intValues.All(kv => kv.In(intValues));
+            && other.intValues.All(kv => kv.In(intValues))   //Very important to keep! TODO: REVIEW
+            && other.strignValues.Count == strignValues.Count
+            && other.strignValues.All(kv => kv.In(strignValues))
+            && other.floatValues.Count == floatValues.Count
+            && other.floatValues.All(kv => kv.In(floatValues));
         //&& other.values.All(kv => values.Contains(kv));
         return result;
     }
 
     public override int GetHashCode()
     {
-        //Better hashing but slow.
-        //var x = 31;
-        //var hashCode = 0;
-        //foreach(var kv in values) {
-        //	hashCode += x*(kv.Key + ":" + kv.Value).GetHashCode);
-        //	x*=31;
-        //}
-        //return hashCode;
-
-        //Heuristic count+first value hash multiplied by polynomial primes
         return boolValues.Count == 0 ? 0 : 31 * boolValues.Count + 31 * 31 * boolValues.First().GetHashCode();
     }
 

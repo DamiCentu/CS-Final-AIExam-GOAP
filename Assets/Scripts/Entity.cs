@@ -210,24 +210,19 @@ public class Entity : MonoBehaviour
 				, (mapNodeA, mapNodeB) => Vector3.Distance(mapNodeA.position, mapNodeB.position)
 				, mapNode => mapNode == dstWp
 				, mapNode =>
-					//w.nearbyItems.Any(it => it.type == ItemType.Door)
-					//? null
-					//:
+
 					mapNode.adjacent
-					//.Where(a => a.nearbyItems.All(it => it.type != ItemType.Door))
 					.Select(a => new AStarNormal<MapNode>.Arc(a, Vector3.Distance(a.position, mapNode.position)))
 			);
 			if(path != null) {
-	//			Debug.Log("COUNT" + path.Count());
+
 				foreach(var next in path.Select(w => FloorPos(w.position))) {
-		//			Debug.Log("NEXT "+ next.ToString());
 
 					while((next - FloorPos(this)).sqrMagnitude >= 0.05f) {
 						_vel = (next - FloorPos(this)).normalized;
 						yield return null;
 					}
-					//_vel = (next - FloorPos(this)).normalized;
-					//yield return new WaitUntil(() => (next - FloorPos(this)).sqrMagnitude < 0.05f);
+
 				}
 			}
 			reachedDst = path.Last();

@@ -19,9 +19,15 @@ public class GoapMiniTest : MonoBehaviour
             from,
             to,
             (curr, goal) => goal.boolValues.Count(kv => !kv.In(curr.boolValues))+
-                            goal.intValues.Count(i=> !i.In(curr.intValues)),
+                            goal.intValues.Count(i=> !i.In(curr.intValues)) +
+                            goal.floatValues.Count(i => !i.In(curr.floatValues)) +
+                            goal.strignValues.Count(i => !i.In(curr.strignValues)),
+
             curr => to.boolValues.All(kv => kv.In(curr.boolValues))&&
-                    to.intValues.All(i => i.In(curr.intValues)),
+                    to.intValues.All(i => i.In(curr.intValues)) &&
+                    to.floatValues.All(i => i.In(curr.floatValues)) &&
+                    to.strignValues.All(i => i.In(curr.strignValues)) ,
+
             curr =>
             {
                 if (watchdog == 0)
@@ -63,44 +69,4 @@ public class GoapMiniTest : MonoBehaviour
 		return seq.Skip(1).Select(x => x.generatingAction);
 	}
 
-    void Start()
-    {
-        /*var actions = new List<GOAPAction>() {
-            new GOAPAction("BuildHouse")
-                .Pre("hasWood", true)
-                .Pre("hasHammer", true)
-                .Effect("houseBuilt", true),
-
-            new GOAPAction("CollectHammer")
-                .Effect("hasHammer", true),
-
-            new GOAPAction("CollectAxe")
-                .Effect("hasAxe", true)
-                .Cost(10f),
-
-            new GOAPAction("CollectCheapAxe")
-                .Effect("hasAxe", true)
-                .Effect("backPain", true)
-                .Cost(2f),
-
-            new GOAPAction("ChopWood")
-                .Pre("hasAxe", true)
-                .Effect("hasWood", true),
-
-            new GOAPAction("UseMedicine")
-                .Effect("backPain", false)
-                .Cost(100f),
-
-            new GOAPAction("MineGold")
-                .Effect("getGold", true),
-        };
-        var from = new GOAPState();
-		from.boolValues["backPain"] = false;
-
-        var to = new GOAPState();
-        to.boolValues["houseBuilt"] = true;
-        to.boolValues["backPain"] = false;
-
-        GoapRun(from, to, actions);*/
-	}
 }

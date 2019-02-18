@@ -76,6 +76,14 @@ public class Tipito : PlayerAndIABaseBehaviour
             cannon.Activate();
         }
 
+
+        if (item.type == ItemType.WorkTable)
+        {
+            var workTable = item.GetComponent<WorkTable>();
+            workTable.CreateBullet();
+        }
+
+
         _fsm.Feed(TipitoAction.NextStep);
     }
 
@@ -87,7 +95,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            cannon.Attack();
+            cannon.AttackNomral();
         }
         _fsm.Feed(TipitoAction.NextStep);
     }
@@ -122,6 +130,12 @@ public class Tipito : PlayerAndIABaseBehaviour
         {
             var cannon = item.GetComponent<Cannon>();
             cannon.Upgrade();
+        }
+
+        if (item.type == ItemType.WorkTable)
+        {
+            var workTable = item.GetComponent<WorkTable>();
+            workTable.UpgradeBullet();
         }
         _fsm.Feed(TipitoAction.NextStep);
     }

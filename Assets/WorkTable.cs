@@ -16,4 +16,13 @@ public class WorkTable : MonoBehaviour {
 		
 	}
 
+    internal void CreateBullet()
+    {
+        
+    }
+
+    internal void UpgradeBullet()
+    {
+
+    }
 }

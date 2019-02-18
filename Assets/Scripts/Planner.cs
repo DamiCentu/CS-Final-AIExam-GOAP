@@ -7,69 +7,50 @@ using System;
 public class Planner : MonoBehaviour {
 
 	List<Tuple<Vector3, Vector3>> debugRayList = new List<Tuple<Vector3, Vector3>>();
+    private bool firstTime;
 
-	void Start ()
+    GOAPState initial = new GOAPState();
+
+    void Start ()
     {
+        StartCoroutine(Plan());
+    }
+
+    public void StartPlanning() {
 		StartCoroutine(Plan());
-	}
+    }
+    
+	IEnumerator Plan()
+    {
+        yield return new WaitForSeconds(0.2f);
+        
+        var observedState = new Dictionary<string, bool>();
 
-    //Check item availability
-	void Check(Dictionary<string, bool> state, string name, ItemType type) {
-
-		var items = Navigation.instance.AllItems();
-		var inventories = Navigation.instance.AllInventories();
-		var floorItems = items.Except(inventories);
-		//Check if an item exists and is reachable.
-		var item = floorItems.FirstOrDefault(x => x.type == type);
-		var here = transform.position;
-		state["accessible" + name] = item != null && Navigation.instance.Reachable(here, item.transform.position, debugRayList);
-
-		var inv = inventories.Any(x => x.type == type);
-		state["otherHas" + name] = inv;
-
-		state["dead" + name] = false;
-	}
-
-	IEnumerator Plan() {
-		yield return new WaitForSeconds(0.2f);
-
-		//Process preconditions.
-		var observedState = new Dictionary<string, bool>();
-		
-		//Consigo los items
-		var nav = Navigation.instance;
-		var floorItems = nav.AllItems();
-		var inventory = nav.AllInventories();
-		var everything = nav.AllItems().Union(nav.AllInventories());
-
-        Check(observedState, "Mine", ItemType.Mine);
-      //  Check(observedState, "PastaFrola"	, ItemType.PastaFrola);
-		Check(observedState, "Defense", ItemType.Defense);
-        Check(observedState, "Cannon", ItemType.Cannon);
-
-
-        foreach (var kv in observedState.OrderBy(x => x.Key))
-        {
-	//		Debug.Log(string.Format("{0:12} : {1}", kv.Key, kv.Value));
-		}
+        var nav = Navigation.instance;
+        var floorItems = nav.AllItems();
+        var inventory = nav.AllInventories();
+        var everything = nav.AllItems().Union(nav.AllInventories());
 
         List<GOAPAction> actions = CreatePossibleActionsList();
+        if (initial.intValues.Count ==0) {
+            initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
+            initial.intValues["waitTime"] = 0;
+            initial.boolValues["hasDefense"] = false;
+            initial.boolValues["hasCannon"] = false;
+            initial.boolValues["hasWorkTable"] = false;
+            initial.boolValues["hasNormalBullet"] = false;
+            initial.boolValues["UpgradeCannon"] = false;
+            initial.boolValues["UpgradeDefense"] = false;
+            initial.floatValues["EnemyLife"] = 100;
+            initial.strignValues["bullet"] = "";
+        }
 
-        GOAPState initial = new GOAPState();
-		initial.boolValues = observedState; //le asigno los valores actuales, conseguidos antes
-		initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
-        initial.intValues["waitTime"] = 0;
-        initial.boolValues["hasDefense"] = false;
-        initial.boolValues["hasCannon"] = false;
-        initial.boolValues["UpgradeCannon"] = false;
-        initial.boolValues["UpgradeDefense"] = false;
 
         GOAPState goal = new GOAPState();
-        goal.boolValues["UpgradeCannon"] = true;
-        goal.boolValues["UpgradeDefense"] = true;
+
+        goal.floatValues["EnemyLife"] = 0;
         ;
-        //  goal.intValues["hasGold"] = 20;
-        //goal.boolValues["hasMace"] = true;
+
 
         var typeDict = new Dictionary<string, ItemType>() {
 
@@ -77,25 +58,27 @@ public class Planner : MonoBehaviour {
             , { "defense", ItemType.Defense }
             , { "cannon", ItemType.Cannon }
             , { "core", ItemType.Core }
+            , { "workTable", ItemType.WorkTable }
             , { "waitZone", ItemType.WaitZone }
         };
-		var actDict = new Dictionary<string, TipitoAction>() {
-			 { "Pickup", TipitoAction.PickUp }
+        var actDict = new Dictionary<string, TipitoAction>() {
+             { "Pickup", TipitoAction.PickUp }
             , { "Create", TipitoAction.Create }
             , { "Upgrade", TipitoAction.Upgrade }
             , { "Attack", TipitoAction.Attack }
             , { "Wait", TipitoAction.Wait }
         };
 
-		var plan = GoapMiniTest.GoapRun(initial, goal, actions);
+        var plan = GoapMiniTest.GoapRun(initial, goal, actions);
 
-		if(plan == null)
-			Debug.Log("Couldn't plan");
-		else {
-			GetComponent<Tipito>().ExecutePlan(
-				plan
+        if (plan == null)
+            Debug.Log("Couldn't plan");
+        else
+        {
+            GetComponent<Tipito>().ExecutePlan(
+                plan
                 .Select(pa => pa.name)
-				.Select(a => 
+                .Select(a =>
                 {
                     var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
                                         i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
@@ -108,32 +91,21 @@ public class Planner : MonoBehaviour {
                     {
                         return null;
                     }
-				}).Where(a => a != null)
-				.ToList()
-			);
-		}
-	}
+                }).Where(a => a != null)
+                .ToList()
+            );
+        }
+    }
 
     private List<GOAPAction> CreatePossibleActionsList()
     {
         return new List<GOAPAction>()
         {
-
              new GOAPAction("Pickup mine")
-          //      .Pre((GOAPState state) => {
-         //           return state.intValues["waitTime"] == 1;
-      //          })
                 .Effect((GOAPState state) => {
                     state.intValues["hasGold"] += 20;
-         //           state.intValues["waitTime"] -=1;
                 }),
 
-      /*        new GOAPAction("Wait waitZone")
-               					//mine es prioritaria!
-                .Effect((GOAPState state) => {
-                    state.intValues["waitTime"] += 1;
-                }),
-                */
              new GOAPAction("Create defense")				
                 .Pre((GOAPState state) => {
                     return state.intValues["hasGold"] >= 20;
@@ -143,7 +115,48 @@ public class Planner : MonoBehaviour {
                     state.intValues["hasGold"] -=20;
                 }),
 
+                new GOAPAction("Create workTable")
+                .Pre((GOAPState state) => {
+                    return state.strignValues["bullet"] == "" &&
+                           state.intValues["hasGold"] >= 20;
+                })
+                .Effect((GOAPState state) => {
+                    state.strignValues["bullet"] = "Normal Bullet";
+                    state.intValues["hasGold"] -=20;
+                }),
+
+
+                new GOAPAction("Upgrade workTable")
+                .Pre((GOAPState state) => {
+                    return state.strignValues["bullet"] == "Normal Bullet" &&
+                           state.intValues["hasGold"] >= 20;
+                })
+                .Effect((GOAPState state) => {
+                     state.strignValues["bullet"] = "Special Bullet";
+                    state.intValues["hasGold"] -=20;
+                }),
+
+
              new GOAPAction("Create cannon")				
+                .Pre((GOAPState state) => {
+                    return state.intValues["hasGold"] >= 30;
+                })
+                .Effect((GOAPState state) => {
+                    state.boolValues["hasCannon"] = true;
+                    state.intValues["hasGold"] -=30;
+                }),
+
+                new GOAPAction("Attack cannon")
+                .Pre((GOAPState state) => {
+                    return state.strignValues["bullet"] == "Normal Bullet" &&                     
+                          state.boolValues["hasCannon"] == true;;
+                })
+                .Effect((GOAPState state) => {
+                    state.strignValues["bullet"] = "";
+                    state.floatValues["EnemyLife"] -= 50;
+                }),
+
+                 new GOAPAction("Create cannon")
                 .Pre((GOAPState state) => {
                     return state.intValues["hasGold"] >= 30;
                 })

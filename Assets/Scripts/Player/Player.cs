@@ -209,7 +209,7 @@ public class Player : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            cannon.Attack();
+            cannon.AttackNomral();
         }
         //_fsm.Feed("");
     }

@@ -26,8 +26,12 @@ public class Cannon : MonoBehaviour {
         cannonPrefabUpgrade.SetActive(true);
     }
 
-    public void Attack()
+    public void AttackNomral()
     {
         Debug.Log("PIUMMMMM");
+    }
+    public void AttackSpecial()
+    {
+        Debug.Log("PIUMMMMM SPECIALLL");
     }
 }
