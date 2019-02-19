@@ -7,7 +7,7 @@ using System;
 public class Planner : MonoBehaviour {
 
 	List<Tuple<Vector3, Vector3>> debugRayList = new List<Tuple<Vector3, Vector3>>();
-    private bool firstTime;
+    private bool firstTime=true;
 
     GOAPState initial = new GOAPState();
 
@@ -24,17 +24,102 @@ public class Planner : MonoBehaviour {
         if (!_ent)
             throw new Exception("Entity null");
 
-        StartCoroutine(Plan());
+        StartPlan();
     }
 
-    public void StartPlanning() {
-		StartCoroutine(Plan());
-    }
-    
-	IEnumerator Plan()
+
+    internal void StartPlan()
     {
-        yield return new WaitForSeconds(0.2f);
-        
+        StartCoroutine("Plan");
+    }
+
+    
+
+    IEnumerator Plan()
+    {
+
+            var observedState = new Dictionary<string, bool>();
+
+            var nav = Navigation.instance;
+            var floorItems = nav.AllItems(_ent.ownerType);
+            var inventory = nav.AllInventories(_ent.ownerType);
+            var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
+
+            List<GOAPAction> actions = CreatePossibleActionsList();
+            if (firstTime)
+            {
+                initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
+                initial.intValues["waitTime"] = 0;
+                initial.boolValues["hasDefense"] = false;
+                initial.boolValues["hasCannon"] = false;
+                initial.boolValues["hasWorkTable"] = false;
+                initial.boolValues["hasNormalBullet"] = false;
+                initial.boolValues["UpgradeCannon"] = false;
+                initial.boolValues["UpgradeDefense"] = false;
+                initial.floatValues["EnemyLife"] = 100;
+                initial.strignValues["bullet"] = "";
+            }
+            else { print("recalculo con los valore snuevos"); }
+
+            GOAPState goal = new GOAPState();
+
+            goal.floatValues["EnemyLife"] = 0;
+            ;
+
+
+            var typeDict = new Dictionary<string, ItemType>() {
+
+                 { "mine", ItemType.Mine }
+                , { "defense", ItemType.Defense }
+                , { "cannon", ItemType.Cannon }
+                , { "core", ItemType.Core }
+                , { "workTable", ItemType.WorkTable }
+                , { "waitZone", ItemType.WaitZone }
+            };
+            var actDict = new Dictionary<string, TipitoAction>() {
+                 { "Pickup", TipitoAction.PickUp }
+                , { "Create", TipitoAction.Create }
+                , { "Upgrade", TipitoAction.Upgrade }
+                , { "Attack", TipitoAction.Attack }
+                , { "Wait", TipitoAction.Wait }
+            };
+
+            var plan = GoapMiniTest.GoapRun(initial, goal, actions);
+
+            if (plan == null)
+                Debug.Log("Couldn't plan");
+            else
+            {
+                _tipito.SetPlan(
+                    plan
+                    .Select(pa => pa.name)
+                    .Select(a =>
+                    {
+                        var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
+                                            i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
+                                            false);
+                        if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
+                        {
+                            return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }).Where(a => a != null)
+                    .ToList()
+                );
+                if (firstTime) {
+                    firstTime = false;
+                    _tipito.NextStep();
+                }
+            }
+        yield return new WaitForSeconds(.1f);
+
+    }
+
+
+    public List<Tuple<TipitoAction, Item>>  RecalculatePlan() {
         var observedState = new Dictionary<string, bool>();
 
         var nav = Navigation.instance;
@@ -43,19 +128,6 @@ public class Planner : MonoBehaviour {
         var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
 
         List<GOAPAction> actions = CreatePossibleActionsList();
-        if (initial.intValues.Count ==0) {
-            initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
-            initial.intValues["waitTime"] = 0;
-            initial.boolValues["hasDefense"] = false;
-            initial.boolValues["hasCannon"] = false;
-            initial.boolValues["hasWorkTable"] = false;
-            initial.boolValues["hasNormalBullet"] = false;
-            initial.boolValues["UpgradeCannon"] = false;
-            initial.boolValues["UpgradeDefense"] = false;
-            initial.floatValues["EnemyLife"] = 100;
-            initial.strignValues["bullet"] = "";
-        }
-
 
         GOAPState goal = new GOAPState();
 
@@ -65,48 +137,43 @@ public class Planner : MonoBehaviour {
 
         var typeDict = new Dictionary<string, ItemType>() {
 
-             { "mine", ItemType.Mine }
-            , { "defense", ItemType.Defense }
-            , { "cannon", ItemType.Cannon }
-            , { "core", ItemType.Core }
-            , { "workTable", ItemType.WorkTable }
-            , { "waitZone", ItemType.WaitZone }
-        };
+                 { "mine", ItemType.Mine }
+                , { "defense", ItemType.Defense }
+                , { "cannon", ItemType.Cannon }
+                , { "core", ItemType.Core }
+                , { "workTable", ItemType.WorkTable }
+                , { "waitZone", ItemType.WaitZone }
+            };
         var actDict = new Dictionary<string, TipitoAction>() {
-             { "Pickup", TipitoAction.PickUp }
-            , { "Create", TipitoAction.Create }
-            , { "Upgrade", TipitoAction.Upgrade }
-            , { "Attack", TipitoAction.Attack }
-            , { "Wait", TipitoAction.Wait }
-        };
+                 { "Pickup", TipitoAction.PickUp }
+                , { "Create", TipitoAction.Create }
+                , { "Upgrade", TipitoAction.Upgrade }
+                , { "Attack", TipitoAction.Attack }
+                , { "Wait", TipitoAction.Wait }
+            };
 
         var plan = GoapMiniTest.GoapRun(initial, goal, actions);
 
-        if (plan == null)
-            Debug.Log("Couldn't plan");
-        else
-        {
-            _tipito.ExecutePlan(
-                plan
-                .Select(pa => pa.name)
-                .Select(a =>
+     
+        return plan
+            .Select(pa => pa.name)
+            .Select(a =>
+            {
+                var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
+                                    i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
+                                    false);
+                if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
                 {
-                    var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
-                                        i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
-                                        false);
-                    if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
-                    {
-                        return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }).Where(a => a != null)
-                .ToList()
-            );
-        }
+                    return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
+                }
+                else
+                {
+                    return null;
+                }
+            }).Where(a => a != null)
+            .ToList();
     }
+
 
     private List<GOAPAction> CreatePossibleActionsList()
     {

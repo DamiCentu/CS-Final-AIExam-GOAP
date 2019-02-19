@@ -24,7 +24,7 @@ public class Item : MonoBehaviour
 	bool insideInventory;
 
     public int goldValue = 15;
-
+    public string owner;
 	public void OnInventoryAdd()
     {
 		Destroy(GetComponent<Rigidbody>());
@@ -41,7 +41,7 @@ public class Item : MonoBehaviour
 
 	void Start ()
     {
-		_mapNode = Navigation.instance.NearestTo(transform.position);
+		_mapNode = Navigation.instance.NearestTo(transform.position, owner);
 		_mapNode.nearbyItems.Add(this);	
 	}
 
@@ -67,7 +67,7 @@ public class Item : MonoBehaviour
 		if(!insideInventory)
         {
 			_mapNode.nearbyItems.Remove(this);
-			_mapNode = Navigation.instance.NearestTo(transform.position);
+			_mapNode = Navigation.instance.NearestTo(transform.position, owner);
 			_mapNode.nearbyItems.Add(this);
 		}
 	}

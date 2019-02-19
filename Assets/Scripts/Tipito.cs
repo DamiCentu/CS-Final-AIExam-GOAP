@@ -28,8 +28,10 @@ public class Tipito : PlayerAndIABaseBehaviour
 	Item _target;
     bool insideItem = false;
 	Entity _ent;
+    public bool shouldRePlan=false;
 
-	IEnumerable<Tuple<TipitoAction, Item>> _plan;
+
+    IEnumerable<Tuple<TipitoAction, Item>> _plan;
 
     protected override void PerformOpen(Entity ent, Item item) {
 		if(item != _target) return;
@@ -200,7 +202,12 @@ public class Tipito : PlayerAndIABaseBehaviour
         upgrade.OnExit += a => _ent.OnHitItem -= PerformUpgrade;
 
         planStep.OnEnter += a => {
-			Debug.Log("Plan next step");
+            if (shouldRePlan) {
+                _plan = this.GetComponent<Planner>().RecalculatePlan();
+                print("Cheeee cambie el plan eh");
+                shouldRePlan = false;
+            }
+            Debug.Log("Plan next step");
 			var step = _plan.FirstOrDefault();
 			if(step != null) {
 				Debug.Log("Next step:" + step.Item1 + "," + step.Item2);
@@ -240,10 +247,14 @@ public class Tipito : PlayerAndIABaseBehaviour
 		_fsm = new EventFSM<TipitoAction>(idle, any);
     }
 
+    internal void NextStep()
+    {
+        _fsm.Feed(TipitoAction.NextStep);
+    }
 
-    public void ExecutePlan(List<Tuple<TipitoAction, Item>> plan) {
+    public void SetPlan(List<Tuple<TipitoAction, Item>> plan) {
 		_plan = plan;
-		_fsm.Feed(TipitoAction.NextStep);
+		//_fsm.Feed(TipitoAction.NextStep);
 	}
 
     void Update ()
