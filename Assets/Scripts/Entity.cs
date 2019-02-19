@@ -77,6 +77,7 @@ public class Entity : MonoBehaviour
     #endregion
 
     #endregion
+    public string ownerType = "";
 
     void Awake()
     {
@@ -196,8 +197,8 @@ public class Entity : MonoBehaviour
 
     protected virtual IEnumerator Navigate(Vector3 destination, Item item = null)
     {
-		var srcWp = Navigation.instance.NearestTo(transform.position);
-		var dstWp = Navigation.instance.NearestTo(destination);
+		var srcWp = Navigation.instance.NearestTo(transform.position , ownerType);
+		var dstWp = Navigation.instance.NearestTo(destination, ownerType);
 		
 		_gizmoRealTarget = dstWp;
 		MapNode reachedDst = srcWp;

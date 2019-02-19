@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-public class Map : MonoBehaviour {
+public class Map : MonoBehaviour
+{
+    public string owner = "";
 	public int width=10, height=10;					//Ancho y alto de la grilla en celdas (enteros)
 	public float raycastStartY = 120f;				//Donde iniciar los raycasts que "llueven"
 	public float cellSize = 1f;						//Tamaño (ancho y largo) de una celda
@@ -143,37 +145,84 @@ public class Map : MonoBehaviour {
         return grid.Cast<MapNode>().Where(x => x != null);
     }
 
-	void OnDrawGizmos() {
-		Gizmos.color = Color.black;
-		Gizmos.DrawWireCube(
-			  new Vector3(transform.position.x + width/2, transform.position.y + raycastStartY /2f, transform.position.z + height/2)
-			, new Vector3(width, raycastStartY, height)
-		);
+    void OnDrawGizmos()
+    {
+        if(owner == Navigation.PLAYER)
+            gizmoPlayer();
+        else if(owner == Navigation.IA)
+            gizmoIA();
+    }
 
-		Gizmos.color = Color.green;
-        
-        if (grid != null) { 
-            foreach (var node in grid) {
+    void gizmoPlayer()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireCube(
+              new Vector3(transform.position.x + width / 2, transform.position.y + raycastStartY / 2f, transform.position.z + height / 2)
+            , new Vector3(width, raycastStartY, height)
+        );
+
+        if (grid != null)
+        {
+            foreach (var node in grid)
+            {
                 if (node == null)
                     continue;
 
-//                 if (node.usedInPath) {
-//                     Gizmos.color = Color.yellow;
-//                     Gizmos.DrawSphere(node.position, nodeGizmoRadius);
-//                     continue;
-//                 }
-                if (node.accessible) { 
+                if (node.accessible)
+                {
                     Gizmos.color = Color.cyan;
                     Gizmos.DrawSphere(node.position, nodeGizmoRadius);
-                    foreach (var nodeAdj in node.adjacent) {
+                    foreach (var nodeAdj in node.adjacent)
+                    {
                         if (nodeAdj != null)
                             Gizmos.DrawLine(node.position, nodeAdj.position);
                     }
                 }
-                else {
+                else
+                {
                     Gizmos.color = Color.red;
                     Gizmos.DrawSphere(node.position, nodeGizmoRadius);
-                    foreach (var nodeAdj in node.adjacent) {
+                    foreach (var nodeAdj in node.adjacent)
+                    {
+                        if (nodeAdj != null)
+                            Gizmos.DrawLine(node.position, nodeAdj.position);
+                    }
+                }
+            }
+        }
+    }
+
+    void gizmoIA()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(
+              new Vector3(transform.position.x + width / 2, transform.position.y + raycastStartY / 2f, transform.position.z + height / 2)
+            , new Vector3(width, raycastStartY, height)
+        );
+
+        if (grid != null)
+        {
+            foreach (var node in grid)
+            {
+                if (node == null)
+                    continue;
+
+                if (node.accessible)
+                {
+                    Gizmos.color = Color.yellow;
+                    Gizmos.DrawSphere(node.position, nodeGizmoRadius);
+                    foreach (var nodeAdj in node.adjacent)
+                    {
+                        if (nodeAdj != null)
+                            Gizmos.DrawLine(node.position, nodeAdj.position);
+                    }
+                }
+                else
+                {
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawSphere(node.position, nodeGizmoRadius);
+                    foreach (var nodeAdj in node.adjacent)
+                    {
                         if (nodeAdj != null)
                             Gizmos.DrawLine(node.position, nodeAdj.position);
                     }

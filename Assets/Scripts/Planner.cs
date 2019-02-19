@@ -11,8 +11,19 @@ public class Planner : MonoBehaviour {
 
     GOAPState initial = new GOAPState();
 
+    Tipito _tipito;
+    Entity _ent;
+
     void Start ()
     {
+        _tipito = GetComponent<Tipito>();
+        if (!_tipito)
+            throw new Exception("Tipito null");
+
+        _ent = GetComponent<Entity>();
+        if (!_ent)
+            throw new Exception("Entity null");
+
         StartCoroutine(Plan());
     }
 
@@ -27,9 +38,9 @@ public class Planner : MonoBehaviour {
         var observedState = new Dictionary<string, bool>();
 
         var nav = Navigation.instance;
-        var floorItems = nav.AllItems();
-        var inventory = nav.AllInventories();
-        var everything = nav.AllItems().Union(nav.AllInventories());
+        var floorItems = nav.AllItems(_ent.ownerType);
+        var inventory = nav.AllInventories(_ent.ownerType);
+        var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
 
         List<GOAPAction> actions = CreatePossibleActionsList();
         if (initial.intValues.Count ==0) {
@@ -75,7 +86,7 @@ public class Planner : MonoBehaviour {
             Debug.Log("Couldn't plan");
         else
         {
-            GetComponent<Tipito>().ExecutePlan(
+            _tipito.ExecutePlan(
                 plan
                 .Select(pa => pa.name)
                 .Select(a =>

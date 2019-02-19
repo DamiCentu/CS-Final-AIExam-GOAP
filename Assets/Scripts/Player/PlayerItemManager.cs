@@ -127,7 +127,7 @@ public class PlayerItemManager : MonoBehaviour {
                 _itemToInstantiate.GetComponent<Cannon>().Activate();
             }
 
-            nearestMapNode = _nav.NearestTo(hit.point);
+            nearestMapNode = _nav.NearestTo(hit.point, Navigation.PLAYER);
             _itemToInstantiate.transform.position = nearestMapNode.position;
         }
 

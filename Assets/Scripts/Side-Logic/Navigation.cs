@@ -6,21 +6,26 @@ using System;
 
 public class Navigation : MonoBehaviour
 {
+    public const string PLAYER = "player";
+    public const string IA = "ia";
     public static Navigation instance;
 
-    Map _map;
+    Dictionary<string,Map> _maps = new Dictionary<string,Map>();
 
     private void Awake()
     {
         instance = this;
-        _map = GetComponent<Map>();
-        _map.Build();
+        _maps = GetComponentsInChildren<Map>().ToDictionary(x => x.owner, x => x );
+        if (_maps == null)
+            throw new Exception("Maps null");
+        _maps[PLAYER].Build();
+        _maps[IA].Build();
     }
 
-	public bool Reachable(Vector3 from, Vector3 to, List<Tuple<Vector3, Vector3>> debugRayList)
+    public bool Reachable(Vector3 from, Vector3 to, List<Tuple<Vector3, Vector3>> debugRayList, string owner)
     {
-		var srcWp = NearestTo(from);
-		var dstWp = NearestTo(to);
+		var srcWp = NearestTo(from, owner);
+		var dstWp = NearestTo(to, owner);
 
 		MapNode mapNode = srcWp;
 
@@ -49,26 +54,26 @@ public class Navigation : MonoBehaviour
 		return !Physics.Raycast(mapNode.position, delta/distance, distance, LayerMask.GetMask(new []{"Blocking"}));
 	}
 
-	public IEnumerable<Item> AllInventories() {
-		return AllItems()
+	public IEnumerable<Item> AllInventories(string owner) {
+		return AllItems(owner)
 			.Select(x => x.GetComponent<Entity>())
 			.Where(x => x != null)
 			.Aggregate(FList.Create<Item>(), (a, x) => a + x.items);
 	}
 
-	public IEnumerable<Item> AllItems() {
-		return AllMapNodes().Aggregate(FList.Create<Item>(), (a, wp) => a += wp.nearbyItems);
+	public IEnumerable<Item> AllItems(string owner) {
+		return AllMapNodes(owner).Aggregate(FList.Create<Item>(), (a, wp) => a += wp.nearbyItems);
 	}
 
-	public IEnumerable<MapNode> AllMapNodes() {
-		return _map.GetNodes();
+	public IEnumerable<MapNode> AllMapNodes(string owner) {
+		return _maps[owner] != null ? _maps[owner].GetNodes() : Enumerable.Empty<MapNode>();
 	}
 
-	public MapNode Random() {
-		return _map.GetRandomMapNodeAccesible();
+	public MapNode Random(string owner) {
+		return _maps[owner] != null ? _maps[owner].GetRandomMapNodeAccesible() : null; 
 	}
 
-	public MapNode NearestTo(Vector3 pos) {
-		return _map.FindClosestNode(pos);
+	public MapNode NearestTo(Vector3 pos, string owner) {
+		return _maps[owner] != null ? _maps[owner].FindClosestNode(pos) : null;
 	}
 }
