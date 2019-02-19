@@ -20,7 +20,7 @@ public class PlayerItemManager : MonoBehaviour {
     Camera _cam;
 
     ItemType _lastTipe;
-    IEnumerable<Item> _itemsCreated;
+    IEnumerable<Item> _itemsCreated = Enumerable.Empty<Item>();
 
     void Start () {
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_CREATE, OnCreate);
