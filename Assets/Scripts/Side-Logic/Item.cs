@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public enum ItemType
 {
@@ -41,11 +42,39 @@ public class Item : MonoBehaviour
 
 	void Start ()
     {
-		_mapNode = Navigation.instance.NearestTo(transform.position, owner);
-		_mapNode.nearbyItems.Add(this);	
+        SetColor(owner);
+        _mapNode = Navigation.instance.NearestTo(transform.position, owner);
+		_mapNode.nearbyItems.Add(this);
 	}
 
-	public void Kill()
+    public Item SetColor (string owner)
+    {
+        var color = owner == Navigation.IA ? Color.red : Color.blue;
+
+        var render = GetComponent<Renderer>();
+        if(render)
+            render.material.color = color;
+
+        foreach (var mat in GetComponentsInChildren<Renderer>().Select(r => r.material))
+        {
+           mat.color = color;
+        }
+        return this;
+    }
+
+    public Item SetOwner(string owner)
+    {
+       this.owner = owner;
+       return this;
+    }
+
+    public Item SetNearbyMapNode(string owner)
+    {
+        _mapNode = Navigation.instance.NearestTo(transform.position, owner);
+        return this;
+    }
+
+    public void Kill()
     {
 		var ent = GetComponent<Entity>();
 		if(ent != null)
@@ -66,6 +95,8 @@ public class Item : MonoBehaviour
     {
 		if(!insideInventory)
         {
+            if (_mapNode == null)
+                return;
 			_mapNode.nearbyItems.Remove(this);
 			_mapNode = Navigation.instance.NearestTo(transform.position, owner);
 			_mapNode.nearbyItems.Add(this);

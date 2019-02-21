@@ -47,11 +47,11 @@ public class Map : MonoBehaviour
         //Debug.Log(grid.Cast<MapNode>().Where(x => x != null).Where(x => x.accessible == true).ToList().Count());
     }
 
-//     private void Update()
-//     {
-//         if (Input.GetKeyDown(KeyCode.Space))
-//             Build();
-//     }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+            Build();
+    }
 
     void RaycastingAndSettingNodesOnTerrainAndGrid() {
         _positionOfRaycast = new Vector3(transform.position.x, transform.position.y + raycastStartY, transform.position.z);

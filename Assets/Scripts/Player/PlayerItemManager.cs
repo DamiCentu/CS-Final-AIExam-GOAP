@@ -76,6 +76,8 @@ public class PlayerItemManager : MonoBehaviour {
                     //itemHitted.GetComponent<Cannon>().Upgrade();
                 }
 
+                itemHitted.SetColor(Navigation.PLAYER).SetOwner(Navigation.PLAYER).SetNearbyMapNode(Navigation.PLAYER);
+
                 Item[] item = new Item[1];
                 item[0] = itemHitted;
 
@@ -106,7 +108,10 @@ public class PlayerItemManager : MonoBehaviour {
             Debug.Log("Amigo plisss");
             EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, new object[] { (Action)OnLockGameObject });
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
+            return;
         }
+
+        _itemToInstantiate.SetColor(Navigation.PLAYER).SetOwner(Navigation.PLAYER).SetNearbyMapNode(Navigation.PLAYER);
     }
 
     void OnLockGameObject()
