@@ -10,12 +10,7 @@ public class Player : PlayerAndIABaseBehaviour
     public LayerMask clickLayerHit;
     public float maxRaycastClickDistance = 500f;
     public float timeToPickup = 1f;
-    public int goldToCreateDefense = 30;
-    public int goldToCreateCannon = 60;
-    public int goldToUpgradeDefense = 30;
-    public int goldToUpgradeCannon = 45;
     Entity _ent;
-    Item _target;
 
     int _gold = 0;
 
@@ -37,39 +32,88 @@ public class Player : PlayerAndIABaseBehaviour
 
     void Start ()
     {
-        EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, (Action)onUpdate);
+        //EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, (Action)onUpdate);
 
-        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnCreate);
-        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_UPGRADE, OnUpgrade);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnRequestCreate);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_UPGRADE, OnRequestUpgrade);
         EventsManager.SubscribeToEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, OnBlockOrUnblockPlayer);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_MINING, OnRequestMining);
     }
 
-    private void OnUpgrade(object[] parameterContainer)
+    private void OnRequestMining(object[] parameterContainer)
     {
         if (!_canDoAnythingElse)
         {
             EventsManager.TriggerEvent(EventsConstants.PLAYER_OCUPED);
             return;
         }
+        var item = (Item)parameterContainer[0];
+        EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
+        _ent.GoTo(item.transform.position, item);
+        _ent.OnReachDestinationWithItem += PerformPickUp;
+    }
 
-        if ((ItemType)parameterContainer[0] == ItemType.Defense && _gold >= goldToUpgradeDefense)
+    protected override void PerformPickUp(Entity ent, Item item)
+    {
+        EventsManager.TriggerEvent(EventsConstants.PLAYER_MINING);
+        StartCoroutine(Wait(timeToPickup,
+            () =>
+            {
+                if (item)
+                    _gold += item.miningGoldValueGiven;
+
+                EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+                EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
+                _ent.OnReachDestinationWithItem -= PerformPickUp;
+            }));
+    }
+
+    private void OnRequestUpgrade(object[] parameterContainer)
+    {
+        if (!_canDoAnythingElse)
         {
-            _gold -= goldToUpgradeDefense;
-            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_UPGRADE, new object[] { (ItemType)parameterContainer[0] });
-            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCUPED);
+            return;
         }
-        else if ((ItemType)parameterContainer[0] == ItemType.Cannon && _gold >= goldToUpgradeCannon)
+        var item = (Item)parameterContainer[0];
+
+        if (_gold >= item.itemCostToUpgrade)
         {
-            _gold -= goldToUpgradeCannon;
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_UPGRADE, new object[] { (ItemType)parameterContainer[0] });
-            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+            _ent.GoTo(item.transform.position, item);
+            _ent.OnReachDestinationWithItem += PerformUpgrade;
         }
         else
         {
             EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD);
         }
+    }
+
+    protected override void PerformUpgrade(Entity ent, Item item)
+    {
+        if (item.type == ItemType.Defense)
+        {
+            var defense = item.GetComponent<Defense>();
+            defense.Upgrade();
+        }
+
+        else if (item.type == ItemType.Cannon)
+        {
+            var cannon = item.GetComponent<Cannon>();
+            cannon.Upgrade();
+        }
+
+        else if (item.type == ItemType.WorkTable)
+        {
+            var workTable = item.GetComponent<WorkTable>();
+            workTable.UpgradeBullet();
+        }
+
+        _gold -= item.itemCostToUpgrade;
+        _ent.OnReachDestinationWithItem -= PerformUpgrade;
+        EventsManager.TriggerEvent(EventsConstants.PLAYER_UPGRADE, new object[] { item.type });
+        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+        EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
     }
 
     private void OnBlockOrUnblockPlayer(object[] parameterContainer)
@@ -77,7 +121,7 @@ public class Player : PlayerAndIABaseBehaviour
         _canDoAnythingElse = (bool)parameterContainer[0];
     }
 
-    private void OnCreate(object[] parameterContainer)
+    private void OnRequestCreate(object[] parameterContainer)
     {
         if (!_canDoAnythingElse)
         {
@@ -85,72 +129,50 @@ public class Player : PlayerAndIABaseBehaviour
             return;
         }
 
-        if ((ItemType)parameterContainer[0] == ItemType.Defense && _gold >= goldToCreateDefense)
+        var item = (Item)parameterContainer[0];
+
+        if (_gold >= item.itemCostToCreate)
         {
-            _gold -= goldToCreateDefense;
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { (ItemType)parameterContainer[0] });
-            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+            _ent.GoTo(item.transform.position, item);
+            _ent.OnReachDestinationWithItem += PerformCreate;
         }
-        else if ((ItemType)parameterContainer[0] == ItemType.Cannon && _gold >= goldToCreateCannon)
-        {
-            _gold -= goldToCreateCannon;
-            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { (ItemType)parameterContainer[0] });
-            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
-        }            
         else
         {
             EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD);
         }
     }
 
-    void onUpdate()
+    protected override void PerformCreate(Entity ent, Item item)
     {
-        //   _fsm.Update();
-        if (_canDoAnythingElse && Input.GetMouseButtonDown(0))
+        if (item.type == ItemType.Defense)
         {
-            RaycastHit hit;
-            var ray = _cam.ScreenPointToRay(Input.mousePosition);
-            Debug.DrawRay(ray.origin, ray.direction * maxRaycastClickDistance, Color.yellow, 1f);
-
-            if (Physics.Raycast(ray, out hit, maxRaycastClickDistance, clickLayerHit))
-            {
-                var item = hit.collider.GetComponent<Item>();
-                if (item)
-                {
-                    _target = item;
-                    CalculateActionByItem(item);
-                }
-            }
-        }       
-    }
-
-    void CalculateActionByItem(Item item)
-    {
-        if(item.type == ItemType.Mine)
-        {
-            _ent.GoTo(item.transform.position , item);
-            _ent.OnReachDestinationWithItem += PerformPickUp;
-            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
+            var defense = item.GetComponent<Defense>();
+            defense.Activate().Set();
         }
-    }
 
-    void OnDisable()
-    {
-        EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, (Action)onUpdate);
-    }
+        if (item.type == ItemType.Cannon)
+        {
+            var cannon = item.GetComponent<Cannon>();
+            cannon.Activate();
+        }
 
-    void OnDestroy()
-    {
-        EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_UPDATE, (Action)onUpdate);
+
+        if (item.type == ItemType.WorkTable)
+        {
+            var workTable = item.GetComponent<WorkTable>();
+            workTable.CreateBullet();
+        }
+
+        _gold -= item.itemCostToCreate;
+        _ent.OnReachDestinationWithItem -= PerformCreate;
+        EventsManager.TriggerEvent(EventsConstants.PLAYER_CREATE, new object[] { item.type });
+        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
+        EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
     }
 
     protected override void PerformOpen(Entity ent, Item item)
     {
-        if (item != _target) return;
-        Debug.Log("Player open");
-
         var key = ent.items.FirstOrDefault(it => it.type == ItemType.Key);
         var door = item.GetComponent<Door>();
         if (door && key)
@@ -158,66 +180,26 @@ public class Player : PlayerAndIABaseBehaviour
             door.Open();
             //Consume key
             Destroy(ent.Removeitem(key).gameObject);
-            //_fsm.Feed("");
         }
         else
         {
-            //_fsm.Feed("");
+
         }
     }
 
-    protected override void PerformPickUp(Entity ent, Item item)
-    {
-        Debug.Log("Player pickup");
-        StartCoroutine(Wait(timeToPickup, 
-            () => 
-        {
-            if(item)
-                _gold += item.goldValue;
-
-            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD, new object[] { _gold });
-            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
-            _ent.OnReachDestinationWithItem -= PerformPickUp;
-        }));
-    }
-
-//     protected override void PerformCreate(Entity ent, Item item)
-//     {
-//         if (item != _target) return;
-//         Debug.Log("Player create");
-//         //	_ent.AddItem(other);
-//         if (item.type == ItemType.Defense)
-//         {
-//             var defense = item.GetComponent<Defense>();
-//             defense.Activate();
-//         }
-// 
-//         if (item.type == ItemType.Cannon)
-//         {
-//             var cannon = item.GetComponent<Cannon>();
-//             cannon.Activate();
-//         }
-// 
-//         //_fsm.Feed("");
-//     }
+   
 
     protected override void PerformAttack(Entity us, Item item)
     {
-        if (item != _target) return;
-        Debug.Log("Player attack");
-
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
             cannon.AttackNomral();
         }
-        //_fsm.Feed("");
     }
 
     protected override void PerformWait(Entity ent, Item item)
     {
-        if (item != _target)
-            return;
         StartCoroutine(Wait(1.0f));
     }
 
@@ -228,23 +210,5 @@ public class Player : PlayerAndIABaseBehaviour
         if(action != null)
             action();
         print("Player ya espere!");
-    }
-
-    protected override void PerformUpgrade(Entity ent, Item item)
-    {
-        if (item != _target) return;
-        Debug.Log("Player upgrade");
-        if (item.type == ItemType.Defense)
-        {
-            var defense = item.GetComponent<Defense>();
-            defense.Upgrade();
-        }
-
-        if (item.type == ItemType.Cannon)
-        {
-            var cannon = item.GetComponent<Cannon>();
-            cannon.Upgrade();
-        }
-        //_fsm.Feed("");
     }
 }

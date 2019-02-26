@@ -6,7 +6,7 @@ using UnityEngine;
 public class WorkTable : MonoBehaviour {
 
 
-    public Tipito entity;
+    public Tipito entity; // esto tambien deberia ser el player?
 	void Start () {
 		
 	}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UpgradeButtonCannon : PerformSomethingButtonAbstract
+public class UpgradeButtonBullet : PerformSomethingButtonAbstract
 {
     public void PerformUpgrade()
     {

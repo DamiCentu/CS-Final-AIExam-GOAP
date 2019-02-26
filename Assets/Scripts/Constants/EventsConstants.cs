@@ -15,9 +15,11 @@ public static class EventsConstants {
 
     public const string PLAYER_REQUEST_CREATE = "playerRequestCreate";
     public const string PLAYER_REQUEST_UPGRADE = "playerRequestUpgrade";
+    public const string PLAYER_REQUEST_MINING = "playerRequestMining";
 
     public const string PLAYER_CREATE = "playerCreate";
     public const string PLAYER_UPGRADE = "playerUpgrade";
+    public const string PLAYER_MINING = "playerMining";
 
     public const string BLOCK_PLAYER_IF_FALSE = "blockOrUnblockPlayer";
 

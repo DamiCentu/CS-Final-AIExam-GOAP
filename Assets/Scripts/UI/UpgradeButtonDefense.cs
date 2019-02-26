@@ -5,22 +5,8 @@ using UnityEngine;
 
 public class UpgradeButtonDefense : PerformSomethingButtonAbstract
 {
-    bool _oneItemAtLeastCreated;
-
-	void Start ()
-    {
-        EventsManager.SubscribeToEvent(EventsConstants.ITEM_CREATED, OnItemCreated);
-    }
-
-    private void OnItemCreated(object[] parameterContainer)
-    {
-        if((ItemType) parameterContainer[0] == ItemType.Defense)
-            _oneItemAtLeastCreated = true;
-    }
-
     public void PerformUpgrade()
     {
-        if(_oneItemAtLeastCreated)
-            TriggerCreate(EventsConstants.PLAYER_REQUEST_UPGRADE, ItemType.Defense);
+        ButtonTrigger(EventsConstants.PLAYER_REQUEST_UPGRADE);
     }
 }

@@ -24,9 +24,16 @@ public class Item : MonoBehaviour
 	MapNode _mapNode;
 	bool insideInventory;
 
-    public int goldValue = 15;
+    public int miningGoldValueGiven = 15;
+    public int itemCostToCreate = 15;
+    public int itemCostToUpgrade = 15;
     public string owner;
-	public void OnInventoryAdd()
+
+    bool upgraded = false;
+
+    public bool Upgraded { get { return upgraded; } set { upgraded = value; } }
+
+    public void OnInventoryAdd()
     {
 		Destroy(GetComponent<Rigidbody>());
 		insideInventory = true;

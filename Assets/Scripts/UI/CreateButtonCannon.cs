@@ -6,6 +6,6 @@ public class CreateButtonCannon : PerformSomethingButtonAbstract
 {
     public void PerformCreate()
     {
-        TriggerCreate(EventsConstants.PLAYER_REQUEST_CREATE, ItemType.Cannon);
+        ButtonTrigger(EventsConstants.PLAYER_REQUEST_CREATE);
     }
 }

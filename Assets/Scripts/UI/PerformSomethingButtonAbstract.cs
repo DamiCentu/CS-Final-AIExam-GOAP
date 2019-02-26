@@ -4,8 +4,10 @@ using UnityEngine;
 
 public abstract class PerformSomethingButtonAbstract : MonoBehaviour
 {
-    protected void TriggerCreate(string constant, ItemType type)
+    public Item itemToCall;
+
+    protected void ButtonTrigger(string constant)
     {
-        EventsManager.TriggerEvent(constant, new object[] { type });
+        EventsManager.TriggerEvent(constant, new object[] { itemToCall });
     }
 }
