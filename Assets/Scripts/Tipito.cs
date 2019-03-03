@@ -97,7 +97,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            cannon.AttackNomral();
+            cannon.AttackNormal();
         }
         _fsm.Feed(TipitoAction.NextStep);
     }

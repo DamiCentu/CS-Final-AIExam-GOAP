@@ -94,10 +94,22 @@ public class Entity : MonoBehaviour
 
         foreach (var it in initialItems)
             AddItem(Instantiate(it));
+
+        EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_FIXED_UPDATE, (Action)OnFixedUpdate);
+    }
+
+    private void OnDestroy()
+    {
+        EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_FIXED_UPDATE, (Action)OnFixedUpdate);
+    }
+
+    private void OnDisable()
+    {
+        EventsManager.TriggerEvent(EventsConstants.DESUBSCRIBE_FIXED_UPDATE, (Action)OnFixedUpdate);
     }
 
     #region MOVEMENT & COLLISION
-    void FixedUpdate()
+    void OnFixedUpdate()
     {
         transform.Translate(Time.fixedDeltaTime * _vel * speed);
     }

@@ -13,6 +13,7 @@ public class Player : PlayerAndIABaseBehaviour
     Entity _ent;
 
     int _gold = 0;
+    int _bullets = 0;
 
     bool _canDoAnythingElse = true;
 
@@ -38,19 +39,39 @@ public class Player : PlayerAndIABaseBehaviour
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_UPGRADE, OnRequestUpgrade);
         EventsManager.SubscribeToEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, OnBlockOrUnblockPlayer);
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_MINING, OnRequestMining);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_SHOOT, OnRequestShoot);
+    }
+
+    private void OnRequestShoot(object[] parameterContainer)
+    {
+        if(_bullets > 0)
+        {
+            var item = (Item)parameterContainer[0];
+            SimpleRequest(item, PerformAttack);
+        }
+        else
+        {
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_BULLETS_NOTIFICATION);
+        }
     }
 
     private void OnRequestMining(object[] parameterContainer)
     {
+        var item = (Item)parameterContainer[0];
+        SimpleRequest(item, PerformPickUp);
+    }
+
+    void SimpleRequest(Item item, Action<Entity, Item> action)
+    {
         if (!_canDoAnythingElse)
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCUPED);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCCUPIED_NOTIFICATION);
             return;
         }
-        var item = (Item)parameterContainer[0];
+        
         EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
         _ent.GoTo(item.transform.position, item);
-        _ent.OnReachDestinationWithItem += PerformPickUp;
+        _ent.OnReachDestinationWithItem += action;
     }
 
     protected override void PerformPickUp(Entity ent, Item item)
@@ -68,25 +89,30 @@ public class Player : PlayerAndIABaseBehaviour
             }));
     }
 
-    private void OnRequestUpgrade(object[] parameterContainer)
+    void RequestWithGold(Item item, int goldCost, Action<Entity, Item> action)
     {
         if (!_canDoAnythingElse)
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCUPED);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCCUPIED_NOTIFICATION);
             return;
         }
-        var item = (Item)parameterContainer[0];
 
-        if (_gold >= item.itemCostToUpgrade)
+        if (_gold >= goldCost)
         {
             EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
             _ent.GoTo(item.transform.position, item);
-            _ent.OnReachDestinationWithItem += PerformUpgrade;
+            _ent.OnReachDestinationWithItem += action;
         }
         else
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD_NOTIFICATION);
         }
+    }
+
+    private void OnRequestUpgrade(object[] parameterContainer)
+    {
+        var item = (Item)parameterContainer[0];
+        RequestWithGold(item, item.itemCostToUpgrade, PerformUpgrade);
     }
 
     protected override void PerformUpgrade(Entity ent, Item item)
@@ -123,24 +149,8 @@ public class Player : PlayerAndIABaseBehaviour
 
     private void OnRequestCreate(object[] parameterContainer)
     {
-        if (!_canDoAnythingElse)
-        {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCUPED);
-            return;
-        }
-
         var item = (Item)parameterContainer[0];
-
-        if (_gold >= item.itemCostToCreate)
-        {
-            EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { false });
-            _ent.GoTo(item.transform.position, item);
-            _ent.OnReachDestinationWithItem += PerformCreate;
-        }
-        else
-        {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD);
-        }
+        RequestWithGold(item, item.itemCostToCreate, PerformCreate);
     }
 
     protected override void PerformCreate(Entity ent, Item item)
@@ -162,6 +172,8 @@ public class Player : PlayerAndIABaseBehaviour
         {
             var workTable = item.GetComponent<WorkTable>();
             workTable.CreateBullet();
+            _bullets++;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS, new object[] { _bullets });
         }
 
         _gold -= item.itemCostToCreate;
@@ -187,15 +199,17 @@ public class Player : PlayerAndIABaseBehaviour
         }
     }
 
-   
-
     protected override void PerformAttack(Entity us, Item item)
     {
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            cannon.AttackNomral();
+            cannon.AttackNormal();
+            _bullets--;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS, new object[] { _bullets });
         }
+        EventsManager.TriggerEvent(EventsConstants.PLAYER_ATTACK, new object[] { item.type });
+        _ent.OnReachDestinationWithItem -= PerformAttack;
     }
 
     protected override void PerformWait(Entity ent, Item item)
