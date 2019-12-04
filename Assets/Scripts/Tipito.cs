@@ -29,6 +29,7 @@ public class Tipito : PlayerAndIABaseBehaviour
     bool insideItem = false;
 	Entity _ent;
     public bool shouldRePlan=false;
+    public float waitTime=2f;
 
 
     IEnumerable<Tuple<TipitoAction, Item>> _plan;
@@ -59,7 +60,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         //     }
         //	_fsm.Feed(TipitoAction.NextStep);
         insideItem = true;
-        StartCoroutine(Wait(1.0f));
+        StartCoroutine(Wait(waitTime));
     }
 
     protected override void PerformCreate(Entity ent, Item item)
@@ -106,7 +107,7 @@ public class Tipito : PlayerAndIABaseBehaviour
     {
         if (item != _target)
             return;
-        StartCoroutine(Wait(1.0f));
+        StartCoroutine(Wait(waitTime));
     }
 
     IEnumerator Wait(float waitTime)

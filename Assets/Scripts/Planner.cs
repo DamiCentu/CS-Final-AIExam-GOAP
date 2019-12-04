@@ -48,7 +48,7 @@ public class Planner : MonoBehaviour {
             List<GOAPAction> actions = CreatePossibleActionsList();
             if (firstTime)
             {
-                initial.intValues["hasGold"] = 0; //agrego el bool "doorOpen"     //   initial.boolValues["hasDefense"] = false;
+                initial.intValues["hasGold"] = 0; // initial.boolValues["hasDefense"] = false;
                 initial.intValues["waitTime"] = 0;
                 initial.boolValues["hasDefense"] = false;
                 initial.boolValues["hasCannon"] = false;
