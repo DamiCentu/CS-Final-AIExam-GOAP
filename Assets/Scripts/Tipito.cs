@@ -31,29 +31,14 @@ public class Tipito : PlayerAndIABaseBehaviour
 	Entity _ent;
     public bool shouldRePlan=false;
     public float waitTime=2f;
-
+    private bool planAgresive = true;
 
     IEnumerable<Tuple<TipitoAction, Item>> _plan;
     private int _gold=0;
     private int bullets = 0;
     private int bullets_upgraded=0;
     private Dictionary<string, bool> structures = new Dictionary<string, bool>();
-
-    /*    protected override void PerformOpen(Entity ent, Item item) {
-            if(item != _target) return;
-            Debug.Log("Open");
-
-            var key = ent.items.FirstOrDefault(it => it.type == ItemType.Key);
-            var door = item.GetComponent<Door>();
-            if(door && key) {
-                door.Open();
-                //Consume key
-                Destroy(ent.Removeitem(key).gameObject);
-                _fsm.Feed(TipitoAction.NextStep);
-            }
-            else
-                _fsm.Feed(TipitoAction.FailedStep);
-        }*/
+    private int count=0;
 
     public void Start()
     {
@@ -88,7 +73,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         Debug.Log("Create");
         action_started = true;
         if (_gold < item.itemCostToCreate) throw new Exception("no hay suficiente oro para crear el item, hay que replanear");// deberia re planear
-        _gold -= item.miningGoldValueGiven;
+        _gold -= item.itemCostToCreate;
         EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });//ToDO No se actualiza el gold bien
 
 
@@ -97,6 +82,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             var defense = item.GetComponent<Defense>();
             defense.Create().Set();
             structures["Defense"] = true;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         }
 
         if (item.type == ItemType.Cannon)
@@ -105,6 +91,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             var cannon = item.GetComponent<Cannon>();
             cannon.Activate();
             structures["Cannon"] = true;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         }
 
 
@@ -115,6 +102,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             workTable.CreateBullet();
             bullets++;
             EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS_IA, new object[] { bullets });
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         }
 
 
@@ -180,7 +168,14 @@ public class Tipito : PlayerAndIABaseBehaviour
         print("WaitForSecondse!");
         yield return new WaitForSeconds(waitTime);
         print("ya espere!");
+        if (count >1000) //TODO QUITAR Y VER EL REPLAN
+        {
+            count = 0;
+            shouldRePlan = true;
+        }
         _fsm.Feed(TipitoAction.NextStep);
+        count++;
+
     }
 
     protected override void PerformUpgrade(Entity ent, Item item)
@@ -189,7 +184,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         Debug.Log("Upgrade");
         action_started = true;
         if (_gold < item.itemCostToUpgrade) throw new Exception("no hay suficiente oro para mejorar el item, hay que replanear");// deberia re planear
-        _gold -= item.miningGoldValueGiven;
+        _gold -= item.itemCostToCreate;
         EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
 
         //	_ent.AddItem(other);
@@ -199,6 +194,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             defense.Upgrade();
             EventsManager.TriggerEvent(EventsConstants.IA_UPGRADE_DEFENSE);
             structures["DefenseUpgraded"] = true;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         }
 
         else if (item.type == ItemType.Cannon && structures["Cannon"])
@@ -207,6 +203,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             cannon.Upgrade();
             EventsManager.TriggerEvent(EventsConstants.IA_UPGRADE_CANNON);
             structures["CannonUpgraded"] = true;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         }
         else {
             throw new Exception("No cumplen las condiciones para mejorar");
