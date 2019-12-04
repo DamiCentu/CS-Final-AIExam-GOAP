@@ -181,7 +181,7 @@ public class Planner : MonoBehaviour {
         {
              new GOAPAction("Pickup mine")
                 .Effect((GOAPState state) => {
-                    state.intValues["hasGold"] += 20;
+                    state.intValues["hasGold"] += 15;
 
                 }),
 
@@ -197,37 +197,37 @@ public class Planner : MonoBehaviour {
                 new GOAPAction("Create workTable")
                 .Pre((GOAPState state) => {
                     return state.strignValues["bullet"] == "" &&
-                           state.intValues["hasGold"] >= 20;
+                           state.intValues["hasGold"] >= 10;
                 })
                 .Effect((GOAPState state) => {
                     state.strignValues["bullet"] = "Normal Bullet";
-                    state.intValues["hasGold"] -=20;
+                    state.intValues["hasGold"] -=10;
                 }),
 
 
-                new GOAPAction("Upgrade workTable")
+ /*               new GOAPAction("Upgrade workTable")
                 .Pre((GOAPState state) => {
                     return state.strignValues["bullet"] == "Normal Bullet" &&
-                           state.intValues["hasGold"] >= 20;
+                           state.intValues["hasGold"] >= 10;
                 })
                 .Effect((GOAPState state) => {
                      state.strignValues["bullet"] = "Special Bullet";
-                    state.intValues["hasGold"] -=20;
+                    state.intValues["hasGold"] -=10;
                 }),
-
+                */
 
              new GOAPAction("Create cannon")				
                 .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 30;
+                    return state.intValues["hasGold"] >= 20;
                 })
                 .Effect((GOAPState state) => {
                     state.boolValues["hasCannon"] = true;
-                    state.intValues["hasGold"] -=30;
+                    state.intValues["hasGold"] -=20;
                 }),
 
                 new GOAPAction("Attack cannon")
                 .Pre((GOAPState state) => {
-                    return state.strignValues["bullet"] == "Normal Bullet" &&                     
+                    return state.strignValues["bullet"] == "Normal Bullet"  &&                     
                           state.boolValues["hasCannon"] == true;;
                 })
                 .Effect((GOAPState state) => {
@@ -237,11 +237,11 @@ public class Planner : MonoBehaviour {
 
                  new GOAPAction("Create cannon")
                 .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 30;
+                    return state.intValues["hasGold"] >= 20;
                 })
                 .Effect((GOAPState state) => {
                     state.boolValues["hasCannon"] = true;
-                    state.intValues["hasGold"] -=30;
+                    state.intValues["hasGold"] -=20;
                 }),
 
               new GOAPAction("Upgrade defense")
@@ -256,12 +256,12 @@ public class Planner : MonoBehaviour {
 
              new GOAPAction("Upgrade cannon")
                 .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 60 &&
+                    return state.intValues["hasGold"] >= 40 &&
                     state.boolValues["hasCannon"] == true;
                 })
                 .Effect((GOAPState state) => {
                     state.boolValues["UpgradeCannon"] = true;
-                    state.intValues["hasGold"] -=60;
+                    state.intValues["hasGold"] -=40;
                 })
         };
     }

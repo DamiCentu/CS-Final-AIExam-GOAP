@@ -6,8 +6,9 @@ public class Cannon : MonoBehaviour {
 
     public GameObject cannonPrefab;
     public GameObject cannonPrefabUpgrade;
-    public GameObject target;
-
+    public Core target;
+    public int normalDamage=25;
+    public int upgradedDamage=40;
     public void Start()
     {
         cannonPrefab.SetActive(false);
@@ -28,10 +29,10 @@ public class Cannon : MonoBehaviour {
 
     public void AttackNormal()
     {
-        Debug.Log("PIUMMMMM");
+        target.ReceiveDamage(normalDamage);
     }
     public void AttackSpecial()
     {
-        Debug.Log("PIUMMMMM SPECIALLL");
+        target.ReceiveDamage(upgradedDamage);
     }
 }

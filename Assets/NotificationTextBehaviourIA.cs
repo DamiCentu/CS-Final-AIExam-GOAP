@@ -28,6 +28,11 @@ public class NotificationTextBehaviourIA : UpdateableTextAbstract
         SetText("");
     }
 
+    private void OnIA_SHOOTING_UPGRADED(object[] parameterContainer)
+    {
+        HandleText("Shooting upgraded bullet...");
+    }
+
     private void OnIA_MINNING(object[] parameterContainer)
     {
         HandleText("Minning...");

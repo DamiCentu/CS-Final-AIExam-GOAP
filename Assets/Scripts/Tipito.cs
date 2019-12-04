@@ -36,22 +36,31 @@ public class Tipito : PlayerAndIABaseBehaviour
     private int _gold=0;
     private int bullets = 0;
     private int bullets_upgraded=0;
+    private Dictionary<string, bool> structures = new Dictionary<string, bool>();
 
-/*    protected override void PerformOpen(Entity ent, Item item) {
-		if(item != _target) return;
-		Debug.Log("Open");
-		
-		var key = ent.items.FirstOrDefault(it => it.type == ItemType.Key);
-		var door = item.GetComponent<Door>();
-		if(door && key) {
-			door.Open();
-			//Consume key
-			Destroy(ent.Removeitem(key).gameObject);
-			_fsm.Feed(TipitoAction.NextStep);
-		}
-		else
-			_fsm.Feed(TipitoAction.FailedStep);
-	}*/
+    /*    protected override void PerformOpen(Entity ent, Item item) {
+            if(item != _target) return;
+            Debug.Log("Open");
+
+            var key = ent.items.FirstOrDefault(it => it.type == ItemType.Key);
+            var door = item.GetComponent<Door>();
+            if(door && key) {
+                door.Open();
+                //Consume key
+                Destroy(ent.Removeitem(key).gameObject);
+                _fsm.Feed(TipitoAction.NextStep);
+            }
+            else
+                _fsm.Feed(TipitoAction.FailedStep);
+        }*/
+
+    public void Start()
+    {
+        structures["Cannon"] = false;
+        structures["Defense"] = false;
+        structures["CannonUpgraded"] = false;
+        structures["DefenseUpgraded"] = false;
+    }
 
     protected override void PerformPickUp(Entity ent, Item item) {
 		if(item != _target || action_started)
@@ -62,7 +71,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         _gold += item.miningGoldValueGiven;
 
         EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
-
+        EventsManager.TriggerEvent(EventsConstants.IA_MINNING);
         //	_ent.AddItem(other);
         //     if (other.type == ItemType.Mine) {
         //        other.gameObject.SetActive(false);
@@ -79,13 +88,14 @@ public class Tipito : PlayerAndIABaseBehaviour
         action_started = true;
         if (_gold < item.itemCostToCreate) throw new Exception("no hay suficiente oro para crear el item, hay que replanear");// deberia re planear
         _gold -= item.miningGoldValueGiven;
-        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
+        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });//ToDO No se actualiza el gold bien
 
 
         if (item.type == ItemType.Defense) {
             EventsManager.TriggerEvent(EventsConstants.IA_CREATE_DEFENSE);
             var defense = item.GetComponent<Defense>();
             defense.Create().Set();
+            structures["Defense"] = true;
         }
 
         if (item.type == ItemType.Cannon)
@@ -93,6 +103,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             EventsManager.TriggerEvent(EventsConstants.IA_CREATE_CANNON);
             var cannon = item.GetComponent<Cannon>();
             cannon.Activate();
+            structures["Cannon"] = true;
         }
 
 
@@ -111,20 +122,20 @@ public class Tipito : PlayerAndIABaseBehaviour
 
     protected override void PerformAttack(Entity us, Item item)
     {
-        if (item != _target) return;
+        if (item != _target||action_started) return;
         Debug.Log("Attack");
-
+        action_started = true;
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            if (bullets_upgraded > 0)
+            if (bullets > 0)
             {
-                cannon.AttackSpecial();
-                bullets_upgraded--;
-            }
-            else if (bullets > 0)
-            {
-                cannon.AttackNormal();
+                if (structures["CannonUpgraded"]) cannon.AttackSpecial();
+                else if (structures["Cannon"]) cannon.AttackNormal();
+                else  throw new Exception("no hay ninguna estructura para disparar, hay que replanear");// deberia re planear}
+                bullets--;
+                EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS_IA, new object[] { bullets });
+                EventsManager.TriggerEvent(EventsConstants.IA_SHOOTING);
             }
             else {
                 throw new Exception("no hay suficientes balas para disparar, hay que replanear");// deberia re planear
@@ -158,23 +169,30 @@ public class Tipito : PlayerAndIABaseBehaviour
         EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
 
         //	_ent.AddItem(other);
-        if (item.type == ItemType.Defense)
+        if (item.type == ItemType.Defense && structures["Defense"])
         {
             var defense = item.GetComponent<Defense>();
             defense.Upgrade();
+            EventsManager.TriggerEvent(EventsConstants.IA_UPGRADE_DEFENSE);
+            structures["DefenseUpgraded"] = true;
         }
 
-        if (item.type == ItemType.Cannon)
+        else if (item.type == ItemType.Cannon && structures["Cannon"])
         {
             var cannon = item.GetComponent<Cannon>();
             cannon.Upgrade();
+            EventsManager.TriggerEvent(EventsConstants.IA_UPGRADE_CANNON);
+            structures["CannonUpgraded"] = true;
         }
-
-        if (item.type == ItemType.WorkTable)
+        else {
+            throw new Exception("No cumplen las condiciones para mejorar");
+        }
+    /*    if (item.type == ItemType.WorkTable)
         {
             var workTable = item.GetComponent<WorkTable>();
             workTable.UpgradeBullet();
-        }
+            EventsManager.TriggerEvent(EventsConstants.IA_UPGRADE_BULLET);
+        }*/
         StartCoroutine(Wait(waitTime));
     }
 

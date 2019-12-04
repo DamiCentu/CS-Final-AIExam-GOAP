@@ -20,6 +20,7 @@ public static class EventsConstants {
 
     public const string IA_MINNING = "IA_MINNING";
     public const string IA_SHOOTING = "IA_SHOOTING";
+    public const string IA_SHOOTING_UPGRADED = "IA_SHOOTING_UPGRADED";
     public const string IA_CREATE_BULLET = "IA_CREATE_BULLET";
     public const string IA_CREATE_CANNON = "IA_CREATE_CANNON";
     public const string IA_CREATE_DEFENSE = "IA_CREATE_DEFENSE";
