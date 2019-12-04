@@ -19,7 +19,8 @@ public enum TipitoAction
     Create,
     Upgrade,
     Attack,
-    Wait
+    Wait,
+    SuperAttack
 }
 
 public class Tipito : PlayerAndIABaseBehaviour
@@ -130,14 +131,37 @@ public class Tipito : PlayerAndIABaseBehaviour
             var cannon = item.GetComponent<Cannon>();
             if (bullets > 0)
             {
-                if (structures["CannonUpgraded"]) cannon.AttackSpecial();
-                else if (structures["Cannon"]) cannon.AttackNormal();
+                if (structures["Cannon"]) cannon.AttackNormal();
                 else  throw new Exception("no hay ninguna estructura para disparar, hay que replanear");// deberia re planear}
                 bullets--;
                 EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS_IA, new object[] { bullets });
                 EventsManager.TriggerEvent(EventsConstants.IA_SHOOTING);
             }
             else {
+                throw new Exception("no hay suficientes balas para disparar, hay que replanear");// deberia re planear
+            }
+        }
+        StartCoroutine(Wait(waitTime));
+    }
+
+    protected override void PerformSuperAttack(Entity us, Item item)
+    {
+        if (item != _target || action_started) return;
+        Debug.Log("SuperAttack");
+        action_started = true;
+        if (item.type == ItemType.Cannon)
+        {
+            var cannon = item.GetComponent<Cannon>();
+            if (bullets > 0)
+            {
+                if (structures["CannonUpgraded"]) cannon.AttackSpecial();
+                else throw new Exception("no hay ninguna estructura actualizada para disparar, hay que replanear");// deberia re planear}
+                bullets--;
+                EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS_IA, new object[] { bullets });
+                EventsManager.TriggerEvent(EventsConstants.IA_SHOOTING);
+            }
+            else
+            {
                 throw new Exception("no hay suficientes balas para disparar, hay que replanear");// deberia re planear
             }
         }
@@ -212,6 +236,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         var create = new State<TipitoAction>("create");
         var upgrade = new State<TipitoAction>("upgrade");
         var attack = new State<TipitoAction>("attack");
+        var super_attack = new State<TipitoAction>("super_attack");
         var open = new State<TipitoAction>("open");
         var success = new State<TipitoAction>("success");
         var wait = new State<TipitoAction>("wait");
@@ -258,6 +283,14 @@ public class Tipito : PlayerAndIABaseBehaviour
             action_started = false;
         };
 
+       super_attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformSuperAttack; };
+        super_attack.OnExit += a =>
+        {
+            _ent.OnHitItem -= PerformSuperAttack;
+            action_started = false;
+        };
+
+
 
         upgrade.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformUpgrade; };
         upgrade.OnExit += a =>  {
@@ -302,6 +335,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             .SetTransition(TipitoAction.PickUp, pickup)
             .SetTransition(TipitoAction.Create, create)
             .SetTransition(TipitoAction.Attack, attack)
+            .SetTransition(TipitoAction.SuperAttack, super_attack)
             .SetTransition(TipitoAction.Upgrade, upgrade)
             .SetTransition(TipitoAction.Open, open)
             .SetTransition(TipitoAction.Success, success)

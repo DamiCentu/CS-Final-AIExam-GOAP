@@ -83,6 +83,7 @@ public class Planner : MonoBehaviour {
                 , { "Upgrade", TipitoAction.Upgrade }
                 , { "Attack", TipitoAction.Attack }
                 , { "Wait", TipitoAction.Wait }
+                , { "SuperAttack", TipitoAction.SuperAttack }
             };
 
             var plan = GoapMiniTest.GoapRun(initial, goal, actions);
@@ -186,14 +187,14 @@ public class Planner : MonoBehaviour {
 
             }),
 
-     /*       new GOAPAction("Create defense")
+            new GOAPAction("Create defense")
             .Pre((GOAPState state) => {
                 return state.intValues["hasGold"] >= 20;
             })
             .Effect((GOAPState state) => {
                 state.boolValues["hasDefense"] = true;
                 state.intValues["hasGold"] -=20;
-            }),*/
+            }),
             new GOAPAction("Create workTable")
                 .Pre((GOAPState state) => {
                     return state.strignValues["bullet"] == "" &&
@@ -204,31 +205,27 @@ public class Planner : MonoBehaviour {
                     state.intValues["hasGold"] -=10;
                 }),
 
-             new GOAPAction("Create cannon")
-                .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 20;
-                })
-                .Effect((GOAPState state) => {
-                    state.boolValues["hasCannon"] = true;
-                    state.intValues["hasGold"] -=20;
-                }),
-
-            new GOAPAction("Attack cannon")
+       /*     new GOAPAction("Attack cannon")
                 .Pre((GOAPState state) => {
                     return state.strignValues["bullet"] == "Normal Bullet"  &&
-                            state.boolValues["hasCannon"] == true;;
+                            state.boolValues["hasCannon"] == true;
                 })
                 .Effect((GOAPState state) => {
-                    if(state.boolValues["UpgradeCannon"]){
-                        state.strignValues["bullet"] = "";
-                        state.floatValues["EnemyLife"] -= 40;
-                    }
-                    else{
                         state.strignValues["bullet"] = "";
                         state.floatValues["EnemyLife"] -= 25;
-                    }
+                }),*/
 
+
+            new GOAPAction("SuperAttack cannon")
+                .Pre((GOAPState state) => {
+                    return state.strignValues["bullet"] == "Normal Bullet"  &&
+                            state.boolValues["UpgradeCannon"] == true;
+                })
+                .Effect((GOAPState state) => {
+                        state.strignValues["bullet"] = "";
+                        state.floatValues["EnemyLife"] -= 100;
                 }),
+
 
             new GOAPAction("Create cannon")
                 .Pre((GOAPState state) => {
