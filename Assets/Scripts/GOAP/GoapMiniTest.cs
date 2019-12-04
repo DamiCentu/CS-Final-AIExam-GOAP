@@ -18,10 +18,7 @@ public class GoapMiniTest : MonoBehaviour
         var seq = AStarNormal<GOAPState>.Run(
             from,
             to,
-            (curr, goal) => goal.boolValues.Count(kv => !kv.In(curr.boolValues))+
-                            goal.intValues.Count(i=> !i.In(curr.intValues)) +
-                            goal.floatValues.Count(i => !i.In(curr.floatValues)) +
-                            goal.strignValues.Count(i => !i.In(curr.strignValues)),
+            (curr, goal) => curr.floatValues["EnemyLife"]- goal.floatValues["EnemyLife"],
 
             curr => to.boolValues.All(kv => kv.In(curr.boolValues))&&
                     to.intValues.All(i => i.In(curr.intValues)) &&
