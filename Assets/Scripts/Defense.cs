@@ -7,13 +7,14 @@ public class Defense : MonoBehaviour {
 
     public GameObject modelDefense;
     public GameObject upgradeDefense;
-
+    public int cost_defense;
+    public int cost_defense_update;
     Collider _modelDefenseCollider;
 
     public void Start()
     {
-        _modelDefenseCollider = modelDefense.GetComponent<Collider>();
-
+        // _modelDefenseCollider = modelDefense.GetComponent<Collider>();
+        _modelDefenseCollider = GetComponent<Collider>();
         if (!_modelDefenseCollider)
             throw new Exception("ModelDefenseCollider null");
 
@@ -22,7 +23,7 @@ public class Defense : MonoBehaviour {
         _modelDefenseCollider.enabled = false;
     }
 
-    public Defense Activate() {
+    public Defense Create() {
         modelDefense.SetActive(true);
         return this;
     }

@@ -182,6 +182,7 @@ public class Planner : MonoBehaviour {
              new GOAPAction("Pickup mine")
                 .Effect((GOAPState state) => {
                     state.intValues["hasGold"] += 20;
+
                 }),
 
              new GOAPAction("Create defense")				

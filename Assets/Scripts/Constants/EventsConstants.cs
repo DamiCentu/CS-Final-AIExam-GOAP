@@ -14,7 +14,22 @@ public static class EventsConstants {
 
     public const string UI_UPDATE_GOLD = "UIupdateGold";
     public const string UI_UPDATE_BULLETS = "UIupdateBullets";
+    //---------------------------------------------------------------
+    public const string UI_UPDATE_GOLD_IA = "UIupdateGoldIA";
+    public const string UI_UPDATE_BULLETS_IA = "UIupdateBulletsIA";
 
+    public const string IA_MINNING = "IA_MINNING";
+    public const string IA_SHOOTING = "IA_SHOOTING";
+    public const string IA_CREATE_BULLET = "IA_CREATE_BULLET";
+    public const string IA_CREATE_CANNON = "IA_CREATE_CANNON";
+    public const string IA_CREATE_DEFENSE = "IA_CREATE_DEFENSE";
+    public const string IA_UPGRADE_BULLET = "IA_UPGRADE_BULLET";
+    public const string IA_UPGRADE_CANNON = "IA_UPGRADE_CANNON";
+    public const string IA_UPGRADE_DEFENSE = "IA_UPGRADE_DEFENSE";
+
+
+
+    //---------------------------------------------------------------
     public const string SET_MAP_NODE_UNACCESABLE = "mapNodesUpdate";
 
     public const string PLAYER_REQUEST_CREATE = "playerRequestCreate";

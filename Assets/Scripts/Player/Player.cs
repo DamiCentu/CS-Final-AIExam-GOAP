@@ -158,7 +158,7 @@ public class Player : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Defense)
         {
             var defense = item.GetComponent<Defense>();
-            defense.Activate().Set();
+            defense.Create().Set();
         }
 
         if (item.type == ItemType.Cannon)

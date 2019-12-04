@@ -26,15 +26,18 @@ public class Tipito : PlayerAndIABaseBehaviour
 {
     EventFSM<TipitoAction> _fsm;
 	Item _target;
-    bool insideItem = false;
+    bool action_started = false;
 	Entity _ent;
     public bool shouldRePlan=false;
     public float waitTime=2f;
 
 
     IEnumerable<Tuple<TipitoAction, Item>> _plan;
+    private int _gold=0;
+    private int bullets = 0;
+    private int bullets_upgraded=0;
 
-    protected override void PerformOpen(Entity ent, Item item) {
+/*    protected override void PerformOpen(Entity ent, Item item) {
 		if(item != _target) return;
 		Debug.Log("Open");
 		
@@ -48,33 +51,46 @@ public class Tipito : PlayerAndIABaseBehaviour
 		}
 		else
 			_fsm.Feed(TipitoAction.FailedStep);
-	}
+	}*/
 
     protected override void PerformPickUp(Entity ent, Item item) {
-		if(item != _target || insideItem)
+		if(item != _target || action_started)
             return;
 		Debug.Log("Pickup");
+
+        // deberia fallar el plan si me estan atacando y tengo suficiente oro como para hacer una defensa o ir a replan
+        _gold += item.miningGoldValueGiven;
+
+        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
+
         //	_ent.AddItem(other);
         //     if (other.type == ItemType.Mine) {
         //        other.gameObject.SetActive(false);
         //     }
         //	_fsm.Feed(TipitoAction.NextStep);
-        insideItem = true;
+        action_started = true;
         StartCoroutine(Wait(waitTime));
     }
 
     protected override void PerformCreate(Entity ent, Item item)
     {
-        if (item != _target) return;
+        if (item != _target || action_started) return;
         Debug.Log("Create");
-        //	_ent.AddItem(other);
+        action_started = true;
+        if (_gold < item.itemCostToCreate) throw new Exception("no hay suficiente oro para crear el item, hay que replanear");// deberia re planear
+        _gold -= item.miningGoldValueGiven;
+        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
+
+
         if (item.type == ItemType.Defense) {
+            EventsManager.TriggerEvent(EventsConstants.IA_CREATE_DEFENSE);
             var defense = item.GetComponent<Defense>();
-            defense.Activate().Set();
+            defense.Create().Set();
         }
 
         if (item.type == ItemType.Cannon)
         {
+            EventsManager.TriggerEvent(EventsConstants.IA_CREATE_CANNON);
             var cannon = item.GetComponent<Cannon>();
             cannon.Activate();
         }
@@ -82,12 +98,15 @@ public class Tipito : PlayerAndIABaseBehaviour
 
         if (item.type == ItemType.WorkTable)
         {
+            EventsManager.TriggerEvent(EventsConstants.IA_CREATE_BULLET);
             var workTable = item.GetComponent<WorkTable>();
             workTable.CreateBullet();
+            bullets++;
+            EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS_IA, new object[] { bullets });
         }
 
 
-        _fsm.Feed(TipitoAction.NextStep);
+        StartCoroutine(Wait(waitTime));
     }
 
     protected override void PerformAttack(Entity us, Item item)
@@ -98,9 +117,20 @@ public class Tipito : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
-            cannon.AttackNormal();
+            if (bullets_upgraded > 0)
+            {
+                cannon.AttackSpecial();
+                bullets_upgraded--;
+            }
+            else if (bullets > 0)
+            {
+                cannon.AttackNormal();
+            }
+            else {
+                throw new Exception("no hay suficientes balas para disparar, hay que replanear");// deberia re planear
+            }
         }
-        _fsm.Feed(TipitoAction.NextStep);
+        StartCoroutine(Wait(waitTime));
     }
 
     protected override void PerformWait(Entity ent, Item item)
@@ -120,8 +150,13 @@ public class Tipito : PlayerAndIABaseBehaviour
 
     protected override void PerformUpgrade(Entity ent, Item item)
     {
-        if (item != _target) return;
+        if (item != _target|| action_started) return;
         Debug.Log("Upgrade");
+        action_started = true;
+        if (_gold < item.itemCostToUpgrade) throw new Exception("no hay suficiente oro para mejorar el item, hay que replanear");// deberia re planear
+        _gold -= item.miningGoldValueGiven;
+        EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
+
         //	_ent.AddItem(other);
         if (item.type == ItemType.Defense)
         {
@@ -140,7 +175,7 @@ public class Tipito : PlayerAndIABaseBehaviour
             var workTable = item.GetComponent<WorkTable>();
             workTable.UpgradeBullet();
         }
-        _fsm.Feed(TipitoAction.NextStep);
+        StartCoroutine(Wait(waitTime));
     }
 
     void NextStep(Entity ent, MapNode wp, bool reached) {
@@ -149,7 +184,7 @@ public class Tipito : PlayerAndIABaseBehaviour
 	}
 
     void Awake() {
-		_ent = GetComponent<Entity>();
+        _ent = GetComponent<Entity>();
 
         var any = new State<TipitoAction>("any");
         var idle = new State<TipitoAction>("idle");
@@ -166,7 +201,7 @@ public class Tipito : PlayerAndIABaseBehaviour
 
         failStep.OnEnter += a => { _ent.Stop(); Debug.Log("Plan failed"); };
 
-		pickup.OnEnter += a => {
+        pickup.OnEnter += a => {
             Debug.Log("pickup.OnEnter");
             _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformPickUp;
             Debug.Log("pickup.OnEnter finish");
@@ -176,7 +211,7 @@ public class Tipito : PlayerAndIABaseBehaviour
 
             Debug.Log("pickup.OnExit");
             _ent.OnHitItem -= PerformPickUp;
-            insideItem = false;
+            action_started = false;
             Debug.Log("pickup.OnExit finish");
         };
 
@@ -185,22 +220,32 @@ public class Tipito : PlayerAndIABaseBehaviour
             print(_target);
         };
         wait.OnExit += a => { _ent.OnHitItem -= PerformWait;
-        print("entro en el wait.onExit");
+            print("entro en el wait.onExit");
         };
 
         open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
-		open.OnExit += a => _ent.OnHitItem -= PerformOpen;
+        open.OnExit += a => _ent.OnHitItem -= PerformOpen;
 
         create.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformCreate; };
-        create.OnExit += a => _ent.OnHitItem -= PerformCreate;
+        create.OnExit += a =>{
+            _ent.OnHitItem -= PerformCreate;
+            action_started = false;
+        };
 
 
         attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformAttack; };
-        attack.OnExit += a => _ent.OnHitItem -= PerformAttack;
+        attack.OnExit += a =>
+        {
+            _ent.OnHitItem -= PerformAttack;
+            action_started = false;
+        };
 
 
         upgrade.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformUpgrade; };
-        upgrade.OnExit += a => _ent.OnHitItem -= PerformUpgrade;
+        upgrade.OnExit += a =>  {
+            action_started = false;
+            _ent.OnHitItem -= PerformUpgrade;
+        };
 
         planStep.OnEnter += a => {
             if (shouldRePlan) {
@@ -260,7 +305,6 @@ public class Tipito : PlayerAndIABaseBehaviour
 
     void Update ()
     {
-		//Never forget
         _fsm.Update();
 	}
 }

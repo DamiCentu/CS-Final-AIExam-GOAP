@@ -125,7 +125,7 @@ public class PlayerItemManager : MonoBehaviour {
         {
             if (_lastTipe == ItemType.Defense)
             {
-                _itemToInstantiate.GetComponent<Defense>().Activate();
+                _itemToInstantiate.GetComponent<Defense>().Create();
             }
             else if (_lastTipe == ItemType.Cannon)
             {

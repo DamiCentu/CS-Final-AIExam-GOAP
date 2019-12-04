@@ -28,6 +28,8 @@ public class Entity : MonoBehaviour
 	string _label;
 	int _number;
 	Color _color;
+    int _gold=0;
+    int _bullet = 0;
 
 	public float speed = 2f;
 
@@ -253,9 +255,9 @@ public class Entity : MonoBehaviour
     }
 
 	void Paint(Color color) {
-		foreach(Transform xf in body)
-			xf.GetComponent<Renderer>().material.color = color;
-		lblNumber.color = new Color(1f-color.r, 1f-color.g, 1f-color.b);
+	//	foreach(Transform xf in body)
+	//		xf.GetComponent<Renderer>().material.color = color;
+	//	lblNumber.color = new Color(1f-color.r, 1f-color.g, 1f-color.b);
 	}
 
     void OnDrawGizmos()
