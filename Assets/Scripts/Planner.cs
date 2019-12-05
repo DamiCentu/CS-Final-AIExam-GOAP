@@ -10,9 +10,11 @@ public class Planner : MonoBehaviour {
     private bool firstTime=true;
 
     GOAPState initial = new GOAPState();
+    GOAPState cur = new GOAPState();
 
     Tipito _tipito;
     Entity _ent;
+    bool aggressivePlan = true;
 
     void Start ()
     {
@@ -33,42 +35,44 @@ public class Planner : MonoBehaviour {
         StartCoroutine("Plan");
     }
 
-    
 
     IEnumerator Plan()
     {
 
-            var observedState = new Dictionary<string, bool>();
+        var observedState = new Dictionary<string, bool>();
 
-            var nav = Navigation.instance;
-            var floorItems = nav.AllItems(_ent.ownerType);
-            var inventory = nav.AllInventories(_ent.ownerType);
-            var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
+        var nav = Navigation.instance;
+        var floorItems = nav.AllItems(_ent.ownerType);
+        var inventory = nav.AllInventories(_ent.ownerType);
+        var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
 
-            List<GOAPAction> actions = CreatePossibleActionsList();
-            if (firstTime)
-            {
-                
-                initial.intValues["hasGold"] = 0; // initial.boolValues["hasDefense"] = false;
-                initial.intValues["waitTime"] = 0;
-                initial.boolValues["hasDefense"] = false;
-                initial.boolValues["hasCannon"] = false;
-                initial.boolValues["hasWorkTable"] = false;
-                initial.boolValues["hasNormalBullet"] = false;
-                initial.boolValues["UpgradeCannon"] = false;
-                initial.boolValues["UpgradeDefense"] = false;
-                initial.floatValues["EnemyLife"] = 100f;
-                initial.strignValues["bullet"] = "";
-            }
-            else { print("recalculo con los valore snuevos"); }
+        List<GOAPAction> actions = CreatePossibleActionsList();
+        if (firstTime)
+        {
 
-            GOAPState goal = new GOAPState();
-            SetGoals(goal);
+            initial.intValues["hasGold"] = 0; 
+            initial.boolValues["hasDefense"] = false;
+            initial.boolValues["hasCannon"] = false;
+            initial.boolValues["UpgradeCannon"] = false;
+            initial.boolValues["UpgradeDefense"] = false;
+            initial.floatValues["EnemyLife"] = 100f;
+            initial.strignValues["bullet"] = "";
+        }
+        else { print("recalculo con los valore snuevos"); }
+
+        GOAPState goal = new GOAPState();
+        SetGoals(goal);
 
         ;
 
+        StartPlannig(everything, actions, goal);
+        yield return new WaitForSeconds(.1f);
 
-            var typeDict = new Dictionary<string, ItemType>() {
+    }
+
+    private void StartPlannig(IEnumerable<Item> everything, List<GOAPAction> actions, GOAPState goal)
+    {
+        var typeDict = new Dictionary<string, ItemType>() {
 
                  { "mine", ItemType.Mine }
                 , { "defense", ItemType.Defense }
@@ -77,7 +81,7 @@ public class Planner : MonoBehaviour {
                 , { "workTable", ItemType.WorkTable }
                 , { "waitZone", ItemType.WaitZone }
             };
-            var actDict = new Dictionary<string, TipitoAction>() {
+        var actDict = new Dictionary<string, TipitoAction>() {
                  { "Pickup", TipitoAction.PickUp }
                 , { "Create", TipitoAction.Create }
                 , { "Upgrade", TipitoAction.Upgrade }
@@ -86,42 +90,49 @@ public class Planner : MonoBehaviour {
                 , { "SuperAttack", TipitoAction.SuperAttack }
             };
 
-            var plan = GoapMiniTest.GoapRun(initial, goal, actions);
+        var plan = GoapMiniTest.GoapRun(initial, goal, actions,true);
 
-            if (plan == null)
-                print("Couldn't plan");
-            else
-            {
-                _tipito.SetPlan(
-                    plan
-                    .Select(pa => pa.name)
-                    .Select(a =>
+        if (plan == null)
+            print("Couldn't plan");
+        else
+        {
+            _tipito.SetPlan(
+                plan
+                .Select(pa => pa.name)
+                .Select(a =>
+                {
+                    var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
+                                        i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
+                                        false);
+                    if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
                     {
-                        var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
-                                            i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
-                                            false);
-                        if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
-                        {
-                            return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }).Where(a => a != null)
-                    .ToList()
-                );
-                if (firstTime) {
-                    firstTime = false;
-                    _tipito.NextStep();
-                }
+                        return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }).Where(a => a != null)
+                .ToList()
+            );
+            if (firstTime)
+            {
+                firstTime = false;
+                _tipito.NextStep();
             }
-        yield return new WaitForSeconds(.1f);
-
+        }
     }
 
+    internal void SetAggressivePlan(bool v)
+    {
+        aggressivePlan = v;
+    }
+    internal void SetCurState(GOAPState curState)
+    {
+        cur = curState;
+    }
 
-    public List<Tuple<TipitoAction, Item>>  RecalculatePlan() {
+    public List<Tuple<TipitoAction, Item>>  RecalculatePlan(GOAPState curState) {
         var observedState = new Dictionary<string, bool>();
 
         var nav = Navigation.instance;
@@ -134,9 +145,7 @@ public class Planner : MonoBehaviour {
         GOAPState goal = new GOAPState();
 
         SetGoals(goal);
-        
         ;
-
 
         var typeDict = new Dictionary<string, ItemType>() {
 
@@ -153,34 +162,41 @@ public class Planner : MonoBehaviour {
                 , { "Upgrade", TipitoAction.Upgrade }
                 , { "Attack", TipitoAction.Attack }
                 , { "Wait", TipitoAction.Wait }
+                , { "SuperAttack", TipitoAction.SuperAttack }
             };
 
-        var plan = GoapMiniTest.GoapRun(initial, goal, actions);
+        var plan = GoapMiniTest.GoapRun(curState, goal, actions,aggressivePlan?true:false);
 
-     
         return plan
-            .Select(pa => pa.name)
-            .Select(a =>
-            {
-                var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
-                                    i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
-                                    false);
-                if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
+                .Select(pa => pa.name)
+                .Select(a =>
                 {
-                    return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
-                }
-                else
-                {
-                    return null;
-                }
-            }).Where(a => a != null)
-            .ToList();
+                    var i2 = everything.FirstOrDefault(i => typeDict.Any(kv => a.EndsWith(kv.Key)) ?
+                                        i.type == typeDict.First(kv => a.EndsWith(kv.Key)).Value :
+                                        false);
+                    if (actDict.Any(kv => a.StartsWith(kv.Key)) && i2 != null)
+                    {
+                        return Tuple.Create(actDict.First(kv => a.StartsWith(kv.Key)).Value, i2);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }).Where(a => a != null)
+                .ToList();
     }
 
     private void SetGoals(GOAPState goal)
     {
-        goal.floatValues["EnemyLife"] = 0;
-        goal.boolValues["hasCannon"] = true;
+        if (aggressivePlan)
+        {
+            goal.floatValues["EnemyLife"] = 0;
+            goal.boolValues["hasCannon"] = true;
+        }
+        else {
+            goal.boolValues["hasDefense"] = true;
+            goal.boolValues["UpgradeDefense"] = true;
+        }
     }
 
     private List<GOAPAction> CreatePossibleActionsList()
@@ -230,9 +246,6 @@ public class Planner : MonoBehaviour {
                         state.strignValues["bullet"] = "";
                         state.floatValues["EnemyLife"] -= 25;
                 }),
-
-
-
 
             new GOAPAction("Create cannon")
                 .Pre((GOAPState state) => {

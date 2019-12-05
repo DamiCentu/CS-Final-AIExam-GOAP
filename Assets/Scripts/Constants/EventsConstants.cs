@@ -27,8 +27,8 @@ public static class EventsConstants {
     public const string IA_UPGRADE_BULLET = "IA_UPGRADE_BULLET";
     public const string IA_UPGRADE_CANNON = "IA_UPGRADE_CANNON";
     public const string IA_UPGRADE_DEFENSE = "IA_UPGRADE_DEFENSE";
-
-
+    public const string IA_IS_BEING_ATTACK = "IA_IS_BEING_ATTACK";
+    public const string IA_GET_DEFENSE = "IA_GET_DEFENSE";
 
     //---------------------------------------------------------------
     public const string SET_MAP_NODE_UNACCESABLE = "mapNodesUpdate";

@@ -7,10 +7,10 @@ public class Defense : MonoBehaviour {
 
     public GameObject modelDefense;
     public GameObject upgradeDefense;
-    public int cost_defense;
-    public int cost_defense_update;
+    public int life_defense=100;
+    public int life_defense_update=175;
     Collider _modelDefenseCollider;
-
+    private int _life;
     public void Start()
     {
         // _modelDefenseCollider = modelDefense.GetComponent<Collider>();
@@ -23,20 +23,30 @@ public class Defense : MonoBehaviour {
         _modelDefenseCollider.enabled = false;
     }
 
-    public Defense Create() {
-        modelDefense.SetActive(true);
-        return this;
+    internal int ReceiveDamage(int normalDamage)
+    {
+        _life -= normalDamage;
+        if (_life < 0) {
+            int extra_damage = _life;
+            _life = 0;
+            return extra_damage;
+        }
+        else return 0;
     }
 
-    public Defense Set()
-    {
+    public void Create() {
+        modelDefense.SetActive(true);
+        _life = life_defense;
         _modelDefenseCollider.enabled = true;
-        return this;
+        EventsManager.TriggerEvent(EventsConstants.IA_GET_DEFENSE, new object[] { life_defense });
     }
+
 
     internal void Upgrade()
     {
+        _life = life_defense_update;
         modelDefense.SetActive(false);
         upgradeDefense.SetActive(true);
+        EventsManager.TriggerEvent(EventsConstants.IA_GET_DEFENSE, new object[] { life_defense_update });
     }
 }

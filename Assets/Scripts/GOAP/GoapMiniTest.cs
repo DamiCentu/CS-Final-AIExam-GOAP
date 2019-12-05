@@ -11,14 +11,22 @@ Modo psicopata = Menos costo matar
 
 public class GoapMiniTest : MonoBehaviour
 {
-	public static IEnumerable<GOAPAction> GoapRun(GOAPState from, GOAPState to, IEnumerable<GOAPAction> actions)
+	public static IEnumerable<GOAPAction> GoapRun(GOAPState from, GOAPState to, IEnumerable<GOAPAction> actions, bool aggressive_heuristic)
     {
         int watchdog = 200;
 
         var seq = AStarNormal<GOAPState>.Run(
             from,
             to,
-            (curr, goal) => curr.floatValues["EnemyLife"]- goal.floatValues["EnemyLife"],
+            (curr, goal) => {
+                if (aggressive_heuristic) return curr.floatValues["EnemyLife"] - goal.floatValues["EnemyLife"];
+                else {
+                    int h_value = 2;
+                    if (from.boolValues["hasDefense"]) h_value--;
+                    if (from.boolValues["UpgradeDefense"]) h_value--;
+                    return h_value;
+                }
+            } ,
 
             curr => to.boolValues.All(kv => kv.In(curr.boolValues))&&
                     to.intValues.All(i => i.In(curr.intValues)) &&

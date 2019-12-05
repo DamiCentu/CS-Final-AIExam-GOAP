@@ -33,7 +33,6 @@ public class Player : PlayerAndIABaseBehaviour
 
     void Start ()
     {
-        //EventsManager.TriggerEvent(EventsConstants.SUBSCRIBE_UPDATE, (Action)onUpdate);
 
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnRequestCreate);
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_UPGRADE, OnRequestUpgrade);
@@ -158,7 +157,7 @@ public class Player : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Defense)
         {
             var defense = item.GetComponent<Defense>();
-            defense.Create().Set();
+            defense.Create();
         }
 
         if (item.type == ItemType.Cannon)

@@ -42,10 +42,62 @@ public class Tipito : PlayerAndIABaseBehaviour
 
     public void Start()
     {
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_CREATE, PlayerCreateItem);
+        EventsManager.SubscribeToEvent(EventsConstants.IA_IS_BEING_ATTACK, IALifeChange);
+        EventsManager.SubscribeToEvent(EventsConstants.IA_GET_DEFENSE, IALifeChange);
+
         structures["Cannon"] = false;
         structures["Defense"] = false;
         structures["CannonUpgraded"] = false;
-        structures["DefenseUpgraded"] = false;
+        structures["DefenseUpgraded"] = false; 
+    }
+
+    private void StartAgressivePlan()
+    {
+        if (!planAgresive) {
+            planAgresive = true;
+            shouldRePlan = true;
+            Planner p = GetComponent<Planner>();
+            p.SetAggressivePlan(true);
+        }
+    }
+
+    private void StartDefensivePlan()
+    {
+        if (planAgresive)
+        {
+            planAgresive = false;
+            shouldRePlan = true;
+            Planner p = GetComponent<Planner>();
+            p.SetAggressivePlan(false);
+        }
+    }
+
+    private void IALifeChange(object[] parameterContainer)
+    {
+        int life = (int)parameterContainer[0];
+        if (life <= 75)
+        {
+            StartDefensivePlan();
+        }
+        else
+        {
+            StartAgressivePlan();
+        }
+    }
+
+    private void PlayerCreateItem(object[] parameterContainer)
+    {
+        ItemType item = (ItemType)parameterContainer[0];
+        if (item == ItemType.Defense)
+        {
+            StartAgressivePlan();
+        }
+
+        else if (item == ItemType.Cannon)
+        {
+            StartDefensivePlan();
+        }
     }
 
     protected override void PerformPickUp(Entity ent, Item item) {
@@ -58,11 +110,7 @@ public class Tipito : PlayerAndIABaseBehaviour
 
         EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         EventsManager.TriggerEvent(EventsConstants.IA_MINNING);
-        //	_ent.AddItem(other);
-        //     if (other.type == ItemType.Mine) {
-        //        other.gameObject.SetActive(false);
-        //     }
-        //	_fsm.Feed(TipitoAction.NextStep);
+
         action_started = true;
         StartCoroutine(Wait(waitTime));
     }
@@ -80,7 +128,7 @@ public class Tipito : PlayerAndIABaseBehaviour
         if (item.type == ItemType.Defense) {
             EventsManager.TriggerEvent(EventsConstants.IA_CREATE_DEFENSE);
             var defense = item.GetComponent<Defense>();
-            defense.Create().Set();
+            defense.Create();
             structures["Defense"] = true;
             EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
         }
@@ -168,13 +216,13 @@ public class Tipito : PlayerAndIABaseBehaviour
         print("WaitForSecondse!");
         yield return new WaitForSeconds(waitTime);
         print("ya espere!");
-        if (count >1000) //TODO QUITAR Y VER EL REPLAN
+       /* if (count >1000) //TODO QUITAR Y VER EL REPLAN
         {
             count = 0;
             shouldRePlan = true;
-        }
+        }*/
         _fsm.Feed(TipitoAction.NextStep);
-        count++;
+       // count++;
 
     }
 
@@ -297,7 +345,9 @@ public class Tipito : PlayerAndIABaseBehaviour
 
         planStep.OnEnter += a => {
             if (shouldRePlan) {
-                _plan = this.GetComponent<Planner>().RecalculatePlan();
+
+                var planner = this.GetComponent<Planner>();
+                _plan= planner.RecalculatePlan(GetCurState());
                 print("Cheeee cambie el plan eh");
                 shouldRePlan = false;
             }
@@ -340,6 +390,19 @@ public class Tipito : PlayerAndIABaseBehaviour
 			.Done();
         
 		_fsm = new EventFSM<TipitoAction>(idle, any);
+    }
+
+    private GOAPState GetCurState()
+    {
+        GOAPState cur = new GOAPState();
+        cur.intValues["hasGold"] = _gold;
+        cur.boolValues["hasDefense"] = structures["Defense"];
+        cur.boolValues["hasCannon"] = structures["Cannon"];
+        cur.boolValues["UpgradeCannon"] = structures["CannonUpgraded"];
+        cur.boolValues["UpgradeDefense"] = structures["DefenseUpgraded"];
+        cur.floatValues["EnemyLife"] = 100f;//TODO ARREGLAR VIDA ENEMIGO
+        cur.strignValues["bullet"] = bullets>0? "Normal Bullet":"";
+        return cur;
     }
 
     internal void NextStep()
