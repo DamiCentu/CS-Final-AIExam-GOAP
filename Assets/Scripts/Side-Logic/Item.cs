@@ -23,7 +23,9 @@ public class Item : MonoBehaviour
 	
 	MapNode _mapNode;
 	bool insideInventory;
+    bool created;
 
+    public float radius = 0.2f;
     public int miningGoldValueGiven = 15;
     public int itemCostToCreate = 15;
     public int itemCostToUpgrade = 15;
@@ -32,6 +34,8 @@ public class Item : MonoBehaviour
     bool upgraded = false;
 
     public bool Upgraded { get { return upgraded; } set { upgraded = value; } }
+
+    public bool Created { get { return created; } set { created = value; } }
 
     public void OnInventoryAdd()
     {
@@ -109,4 +113,10 @@ public class Item : MonoBehaviour
 			_mapNode.nearbyItems.Add(this);
 		}
 	}
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, radius);
+    }
 }

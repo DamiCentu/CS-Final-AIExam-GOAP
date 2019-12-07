@@ -45,11 +45,8 @@ public static class EventsConstants {
 
     public const string BLOCK_PLAYER_IF_FALSE = "blockOrUnblockPlayer";
 
-    public const string PLAYER_NOT_ENOUGH_GOLD_NOTIFICATION = "playerNotEnoughGoldNotification";
-    public const string PLAYER_NOT_ENOUGH_BULLETS_NOTIFICATION = "playerNotEnoughBulletsNotification";
-    public const string PLAYER_OCCUPIED_NOTIFICATION = "playerOcupedNotification";
+    public const string PLAYER_NOTIFICATION = "playerNotification";
 
     public const string ITEM_CREATED = "itemCreated";
     public const string ITEM_UPGRADED = "itemUpgraded";
-
 }

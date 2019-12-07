@@ -33,7 +33,6 @@ public class Player : PlayerAndIABaseBehaviour
 
     void Start ()
     {
-
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_CREATE, OnRequestCreate);
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_REQUEST_UPGRADE, OnRequestUpgrade);
         EventsManager.SubscribeToEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, OnBlockOrUnblockPlayer);
@@ -46,11 +45,18 @@ public class Player : PlayerAndIABaseBehaviour
         if(_bullets > 0)
         {
             var item = (Item)parameterContainer[0];
+
+            if (!item.Created)
+            {
+                EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Item not created" });
+                return;
+            }
+
             SimpleRequest(item, PerformAttack);
         }
         else
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_BULLETS_NOTIFICATION);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION , new object[] { "Player not enough bullets" });
         }
     }
 
@@ -64,7 +70,7 @@ public class Player : PlayerAndIABaseBehaviour
     {
         if (!_canDoAnythingElse)
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCCUPIED_NOTIFICATION);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Player occupied" }); 
             return;
         }
         
@@ -92,7 +98,7 @@ public class Player : PlayerAndIABaseBehaviour
     {
         if (!_canDoAnythingElse)
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_OCCUPIED_NOTIFICATION);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Player occupied" });
             return;
         }
 
@@ -104,13 +110,26 @@ public class Player : PlayerAndIABaseBehaviour
         }
         else
         {
-            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD_NOTIFICATION);
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Player not enough gold" }); 
         }
     }
 
     private void OnRequestUpgrade(object[] parameterContainer)
     {
         var item = (Item)parameterContainer[0];
+        
+        if (!item.Created)
+        {
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Item not created" });
+            return;
+        }
+
+        if (item.Upgraded)
+        {
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Item already updated" });
+            return;
+        }
+
         RequestWithGold(item, item.itemCostToUpgrade, PerformUpgrade);
     }
 
@@ -120,12 +139,14 @@ public class Player : PlayerAndIABaseBehaviour
         {
             var defense = item.GetComponent<Defense>();
             defense.Upgrade();
+            item.Upgraded = true;
         }
 
         else if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
             cannon.Upgrade();
+            item.Upgraded = true;
         }
 
         else if (item.type == ItemType.WorkTable)
@@ -149,6 +170,13 @@ public class Player : PlayerAndIABaseBehaviour
     private void OnRequestCreate(object[] parameterContainer)
     {
         var item = (Item)parameterContainer[0];
+
+        if (item.Created)
+        {
+            EventsManager.TriggerEvent(EventsConstants.PLAYER_NOTIFICATION, new object[] { "Item already created" });
+            return;
+        }
+
         RequestWithGold(item, item.itemCostToCreate, PerformCreate);
     }
 
@@ -158,14 +186,15 @@ public class Player : PlayerAndIABaseBehaviour
         {
             var defense = item.GetComponent<Defense>();
             defense.Create();
+            item.Created = true;
         }
 
         if (item.type == ItemType.Cannon)
         {
             var cannon = item.GetComponent<Cannon>();
             cannon.Activate();
+            item.Created = true;
         }
-
 
         if (item.type == ItemType.WorkTable)
         {
@@ -208,6 +237,7 @@ public class Player : PlayerAndIABaseBehaviour
             EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_BULLETS, new object[] { _bullets });
         }
         EventsManager.TriggerEvent(EventsConstants.PLAYER_ATTACK, new object[] { item.type });
+        EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
         _ent.OnReachDestinationWithItem -= PerformAttack;
     }
 

@@ -245,7 +245,7 @@ public class Entity : MonoBehaviour
 
 		if(reachedDst == dstWp) {
 			_vel = (FloorPos(destination) - FloorPos(this)).normalized;
-			yield return new WaitUntil(() => (FloorPos(destination) - FloorPos(this)).sqrMagnitude < 0.05f);
+			yield return new WaitUntil(() => (FloorPos(destination) - FloorPos(this)).sqrMagnitude < (item ? item.radius : 1f));
 		}
 		
 		_vel = Vector3.zero;

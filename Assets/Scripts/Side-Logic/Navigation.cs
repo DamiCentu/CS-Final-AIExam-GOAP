@@ -37,7 +37,6 @@ public class Navigation : MonoBehaviour
 				, w => w == dstWp
 				, w =>
 					w.adjacent
-				//		.Where(a => a.nearbyItems.All(it => it.type != ItemType.Door))
 						.Select(a => new AStarNormal<MapNode>.Arc(a, Vector3.Distance(a.position, w.position)))
 			);
 			if(path == null)

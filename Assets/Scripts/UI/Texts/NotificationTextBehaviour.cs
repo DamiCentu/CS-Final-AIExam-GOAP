@@ -15,26 +15,14 @@ public class NotificationTextBehaviour : UpdateableTextAbstract
     void Start()
     {
         _waitShowingNotification = new WaitForSeconds(timeShowingNotification);
-        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_NOT_ENOUGH_BULLETS_NOTIFICATION, OnPlayerNotEnoughBullets);
-        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_OCCUPIED_NOTIFICATION, OnPlayerOccupied);
-        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_NOT_ENOUGH_GOLD_NOTIFICATION, OnPlayerNotEnoughGold);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_NOTIFICATION, OnPlayerNotification);
 
         SetText("");
     }
 
-    private void OnPlayerNotEnoughGold(object[] parameterContainer)
+    private void OnPlayerNotification(object[] parameterContainer)
     {
-        HandleText("Player not enough gold");
-    }
-
-    private void OnPlayerOccupied(object[] parameterContainer)
-    {
-        HandleText("Player occupied");
-    }
-
-    void OnPlayerNotEnoughBullets(object[] parameterContainer)
-    {
-        HandleText("Player not enough bullets");
+        HandleText(parameterContainer[0] as string);
     }
 
     void HandleText(string text)
