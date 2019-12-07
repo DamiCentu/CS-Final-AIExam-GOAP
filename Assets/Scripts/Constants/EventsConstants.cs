@@ -33,6 +33,8 @@ public static class EventsConstants {
     //---------------------------------------------------------------
     public const string SET_MAP_NODE_UNACCESABLE = "mapNodesUpdate";
 
+
+    public const string PLAYER_UPGRADE_DEFENSE = "PLAYER_UPGRADE_DEFENSE";
     public const string PLAYER_REQUEST_CREATE = "playerRequestCreate";
     public const string PLAYER_REQUEST_UPGRADE = "playerRequestUpgrade";
     public const string PLAYER_REQUEST_MINING = "playerRequestMining";

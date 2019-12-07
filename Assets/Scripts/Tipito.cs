@@ -40,9 +40,12 @@ public class Tipito : PlayerAndIABaseBehaviour
     private Dictionary<string, bool> structures = new Dictionary<string, bool>();
     private int count=0;
 
+    public Core playerCore;
+
     public void Start()
     {
         EventsManager.SubscribeToEvent(EventsConstants.PLAYER_CREATE, PlayerCreateItem);
+        EventsManager.SubscribeToEvent(EventsConstants.PLAYER_UPGRADE, PlayerUpdateDefense);
         EventsManager.SubscribeToEvent(EventsConstants.IA_IS_BEING_ATTACK, IALifeChange);
         EventsManager.SubscribeToEvent(EventsConstants.IA_GET_DEFENSE, IALifeChange);
 
@@ -50,6 +53,16 @@ public class Tipito : PlayerAndIABaseBehaviour
         structures["Defense"] = false;
         structures["CannonUpgraded"] = false;
         structures["DefenseUpgraded"] = false; 
+    }
+
+    private void PlayerUpdateDefense(object[] parameterContainer)
+    {
+        ItemType item = (ItemType)parameterContainer[0];
+        if (item == ItemType.Defense)
+        {
+            shouldRePlan = true;
+        }
+
     }
 
     private void StartAgressivePlan()
@@ -400,8 +413,8 @@ public class Tipito : PlayerAndIABaseBehaviour
         cur.boolValues["hasCannon"] = structures["Cannon"];
         cur.boolValues["UpgradeCannon"] = structures["CannonUpgraded"];
         cur.boolValues["UpgradeDefense"] = structures["DefenseUpgraded"];
-        cur.floatValues["EnemyLife"] = 100f;//TODO ARREGLAR VIDA ENEMIGO
-        cur.strignValues["bullet"] = bullets>0? "Normal Bullet":"";
+        cur.floatValues["EnemyLife"] = playerCore.GetLife();
+    cur.strignValues["bullet"] = bullets>0? "Normal Bullet":"";
         return cur;
     }
 
