@@ -62,7 +62,6 @@ public class Tipito : PlayerAndIABaseBehaviour
         {
             shouldRePlan = true;
         }
-
     }
 
     private void StartAgressivePlan()
@@ -229,13 +228,9 @@ public class Tipito : PlayerAndIABaseBehaviour
         print("WaitForSecondse!");
         yield return new WaitForSeconds(waitTime);
         print("ya espere!");
-       /* if (count >1000) //TODO QUITAR Y VER EL REPLAN
-        {
-            count = 0;
-            shouldRePlan = true;
-        }*/
-        _fsm.Feed(TipitoAction.NextStep);
-       // count++;
+
+        NextStep();
+        //_fsm.Feed(TipitoAction.NextStep);
 
     }
 
@@ -278,10 +273,10 @@ public class Tipito : PlayerAndIABaseBehaviour
         StartCoroutine(Wait(waitTime));
     }
 
-    void NextStep(Entity ent, MapNode wp, bool reached) {
+ /*   void NextStep(Entity ent, MapNode wp, bool reached) {
 		Debug.Log("On reach target Next step");
 		_fsm.Feed(TipitoAction.NextStep);
-	}
+	}*/
 
     void Awake() {
         _ent = GetComponent<Entity>();
@@ -329,16 +324,16 @@ public class Tipito : PlayerAndIABaseBehaviour
 
         create.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformCreate; };
         create.OnExit += a =>{
-            _ent.OnHitItem -= PerformCreate;
             action_started = false;
+            _ent.OnHitItem -= PerformCreate;
         };
 
 
         attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformAttack; };
         attack.OnExit += a =>
         {
-            _ent.OnHitItem -= PerformAttack;
             action_started = false;
+            _ent.OnHitItem -= PerformAttack;
         };
 
        super_attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformSuperAttack; };

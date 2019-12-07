@@ -19,7 +19,8 @@ public class Core : MonoBehaviour {
         int damage_left =defense.ReceiveDamage(normalDamage);
         if(damage_left<0)_life += damage_left;
         text.text = (_life + defense.life).ToString();
-        EventsManager.TriggerEvent(EventsConstants.IA_IS_BEING_ATTACK, new object[] { (_life + defense.life) });
+        Item i = this.GetComponent<Item>();
+        if (i.name == "ia")   EventsManager.TriggerEvent(EventsConstants.IA_IS_BEING_ATTACK, new object[] { (_life + defense.life) });
     }
 
     internal float GetLife()

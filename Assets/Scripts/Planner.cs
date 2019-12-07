@@ -119,6 +119,7 @@ public class Planner : MonoBehaviour {
             {
                 firstTime = false;
                 _tipito.NextStep();
+
             }
         }
     }
