@@ -12,14 +12,14 @@ public class Planner : MonoBehaviour {
     GOAPState initial = new GOAPState();
     GOAPState cur = new GOAPState();
 
-    Tipito _tipito;
+    IABehaviour _ia;
     Entity _ent;
     bool aggressivePlan = true;
 
     void Start ()
     {
-        _tipito = GetComponent<Tipito>();
-        if (!_tipito)
+        _ia = GetComponent<IABehaviour>();
+        if (!_ia)
             throw new Exception("Tipito null");
 
         _ent = GetComponent<Entity>();
@@ -42,8 +42,6 @@ public class Planner : MonoBehaviour {
         var observedState = new Dictionary<string, bool>();
 
         var nav = Navigation.instance;
-        var floorItems = nav.AllItems(_ent.ownerType);
-        var inventory = nav.AllInventories(_ent.ownerType);
         var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
 
         List<GOAPAction> actions = CreatePossibleActionsList();
@@ -81,13 +79,13 @@ public class Planner : MonoBehaviour {
                 , { "workTable", ItemType.WorkTable }
                 , { "waitZone", ItemType.WaitZone }
             };
-        var actDict = new Dictionary<string, TipitoAction>() {
-                 { "Pickup", TipitoAction.PickUp }
-                , { "Create", TipitoAction.Create }
-                , { "Upgrade", TipitoAction.Upgrade }
-                , { "Attack", TipitoAction.Attack }
-                , { "Wait", TipitoAction.Wait }
-                , { "SuperAttack", TipitoAction.SuperAttack }
+        var actDict = new Dictionary<string, IAAction>() {
+                 { "Pickup", IAAction.PickUp }
+                , { "Create", IAAction.Create }
+                , { "Upgrade", IAAction.Upgrade }
+                , { "Attack", IAAction.Attack }
+                , { "Wait", IAAction.Wait }
+                , { "SuperAttack", IAAction.SuperAttack }
             };
 
         var plan = GoapMiniTest.GoapRun(initial, goal, actions,true);
@@ -96,7 +94,7 @@ public class Planner : MonoBehaviour {
             print("Couldn't plan");
         else
         {
-            _tipito.SetPlan(
+            _ia.SetPlan(
                 plan
                 .Select(pa => pa.name)
                 .Select(a =>
@@ -118,7 +116,7 @@ public class Planner : MonoBehaviour {
             if (firstTime)
             {
                 firstTime = false;
-                _tipito.NextStep();
+                _ia.NextStep();
 
             }
         }
@@ -133,12 +131,10 @@ public class Planner : MonoBehaviour {
         cur = curState;
     }
 
-    public List<Tuple<TipitoAction, Item>>  RecalculatePlan(GOAPState curState) {
+    public List<Tuple<IAAction, Item>>  RecalculatePlan(GOAPState curState) {
         var observedState = new Dictionary<string, bool>();
 
         var nav = Navigation.instance;
-        var floorItems = nav.AllItems(_ent.ownerType);
-        var inventory = nav.AllInventories(_ent.ownerType);
         var everything = nav.AllItems(_ent.ownerType).Union(nav.AllInventories(_ent.ownerType));
 
         List<GOAPAction> actions = CreatePossibleActionsList();
@@ -157,13 +153,13 @@ public class Planner : MonoBehaviour {
                 , { "workTable", ItemType.WorkTable }
                 , { "waitZone", ItemType.WaitZone }
             };
-        var actDict = new Dictionary<string, TipitoAction>() {
-                 { "Pickup", TipitoAction.PickUp }
-                , { "Create", TipitoAction.Create }
-                , { "Upgrade", TipitoAction.Upgrade }
-                , { "Attack", TipitoAction.Attack }
-                , { "Wait", TipitoAction.Wait }
-                , { "SuperAttack", TipitoAction.SuperAttack }
+        var actDict = new Dictionary<string, IAAction>() {
+                 { "Pickup", IAAction.PickUp }
+                , { "Create", IAAction.Create }
+                , { "Upgrade", IAAction.Upgrade }
+                , { "Attack", IAAction.Attack }
+                , { "Wait", IAAction.Wait }
+                , { "SuperAttack", IAAction.SuperAttack }
             };
 
         var plan = GoapMiniTest.GoapRun(curState, goal, actions,aggressivePlan?true:false);

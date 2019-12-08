@@ -211,21 +211,6 @@ public class Player : PlayerAndIABaseBehaviour
         EventsManager.TriggerEvent(EventsConstants.BLOCK_PLAYER_IF_FALSE, new object[] { true });
     }
 
-    protected override void PerformOpen(Entity ent, Item item)
-    {
-        var key = ent.items.FirstOrDefault(it => it.type == ItemType.Key);
-        var door = item.GetComponent<Door>();
-        if (door && key)
-        {
-            door.Open();
-            //Consume key
-            Destroy(ent.Removeitem(key).gameObject);
-        }
-        else
-        {
-
-        }
-    }
 
     protected override void PerformAttack(Entity us, Item item)
     {

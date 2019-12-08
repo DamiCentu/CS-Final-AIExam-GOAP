@@ -5,12 +5,11 @@ using System.Linq;
 using System;
 using IA2;
 
-public enum TipitoAction
+public enum IAAction
 {
     Null,
     Stop,
     Run, 
-    Kill,
     PickUp,
 	NextStep,
 	FailedStep,
@@ -23,9 +22,9 @@ public enum TipitoAction
     SuperAttack
 }
 
-public class Tipito : PlayerAndIABaseBehaviour
+public class IABehaviour : PlayerAndIABaseBehaviour
 {
-    EventFSM<TipitoAction> _fsm;
+    EventFSM<IAAction> _fsm;
 	Item _target;
     bool action_started = false;
 	Entity _ent;
@@ -33,7 +32,7 @@ public class Tipito : PlayerAndIABaseBehaviour
     public float waitTime=2f;
     private bool planAgresive = true;
 
-    IEnumerable<Tuple<TipitoAction, Item>> _plan;
+    IEnumerable<Tuple<IAAction, Item>> _plan;
     private int _gold=0;
     private int bullets = 0;
     private int bullets_upgraded=0;
@@ -266,35 +265,24 @@ public class Tipito : PlayerAndIABaseBehaviour
         else {
             throw new Exception("No cumplen las condiciones para mejorar");
         }
-    /*    if (item.type == ItemType.WorkTable)
-        {
-            var workTable = item.GetComponent<WorkTable>();
-            workTable.UpgradeBullet();
-            EventsManager.TriggerEvent(EventsConstants.IA_UPGRADE_BULLET);
-        }*/
+
         StartCoroutine(Wait(waitTime));
     }
 
- /*   void NextStep(Entity ent, MapNode wp, bool reached) {
-		Debug.Log("On reach target Next step");
-		_fsm.Feed(TipitoAction.NextStep);
-	}*/
 
     void Awake() {
         _ent = GetComponent<Entity>();
 
-        var any = new State<TipitoAction>("any");
-        var idle = new State<TipitoAction>("idle");
-        var planStep = new State<TipitoAction>("planStep");
-        var failStep = new State<TipitoAction>("failStep");
-        var pickup = new State<TipitoAction>("pickup");
-        var create = new State<TipitoAction>("create");
-        var upgrade = new State<TipitoAction>("upgrade");
-        var attack = new State<TipitoAction>("attack");
-        var super_attack = new State<TipitoAction>("super_attack");
-        var open = new State<TipitoAction>("open");
-        var success = new State<TipitoAction>("success");
-        var wait = new State<TipitoAction>("wait");
+        var any = new State<IAAction>("any");
+        var idle = new State<IAAction>("idle");
+        var planStep = new State<IAAction>("planStep");
+        var failStep = new State<IAAction>("failStep");
+        var pickup = new State<IAAction>("pickup");
+        var create = new State<IAAction>("create");
+        var upgrade = new State<IAAction>("upgrade");
+        var attack = new State<IAAction>("attack");
+        var super_attack = new State<IAAction>("super_attack");
+        var success = new State<IAAction>("success");
 
 
         failStep.OnEnter += a => { _ent.Stop(); Debug.Log("Plan failed"); };
@@ -313,16 +301,6 @@ public class Tipito : PlayerAndIABaseBehaviour
             Debug.Log("pickup.OnExit finish");
         };
 
-        wait.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformWait;
-            print("entro en el wait.onEnter");
-            print(_target);
-        };
-        wait.OnExit += a => { _ent.OnHitItem -= PerformWait;
-            print("entro en el wait.onExit");
-        };
-
-        open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
-        open.OnExit += a => _ent.OnHitItem -= PerformOpen;
 
         create.OnEnter += a => {
             print("entro en el create.onEnter");
@@ -339,13 +317,11 @@ public class Tipito : PlayerAndIABaseBehaviour
         attack.OnEnter += a => {
             _ent.GoTo(_target.transform.position);
             _ent.OnHitItem += PerformAttack;
-            print("Entre en attack on enter");
         };
         attack.OnExit += a =>
         {
             action_started = false;
             _ent.OnHitItem -= PerformAttack;
-            print("Entre en attack on enter");
         };
 
        super_attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformSuperAttack; };
@@ -368,7 +344,6 @@ public class Tipito : PlayerAndIABaseBehaviour
 
                 var planner = this.GetComponent<Planner>();
                 _plan= planner.RecalculatePlan(GetCurState());
-                print("Cheeee cambie el plan eh");
                 shouldRePlan = false;
             }
             Debug.Log("Plan next step");
@@ -385,7 +360,7 @@ public class Tipito : PlayerAndIABaseBehaviour
 			else
             {
                 Debug.Log("TipitoAction.Success");
-                _fsm.Feed(TipitoAction.Success);
+                _fsm.Feed(IAAction.Success);
 			}
 		};
 
@@ -394,22 +369,20 @@ public class Tipito : PlayerAndIABaseBehaviour
 		success.OnUpdate += () => { _ent.Jump(); };
 		
 		StateConfigurer.Create(any)
-			.SetTransition(TipitoAction.NextStep, planStep)
-			.SetTransition(TipitoAction.FailedStep, idle)
+			.SetTransition(IAAction.NextStep, planStep)
+			.SetTransition(IAAction.FailedStep, idle)
 			.Done();
 
         StateConfigurer.Create(planStep)
-            .SetTransition(TipitoAction.PickUp, pickup)
-            .SetTransition(TipitoAction.Create, create)
-            .SetTransition(TipitoAction.Attack, attack)
-            .SetTransition(TipitoAction.SuperAttack, super_attack)
-            .SetTransition(TipitoAction.Upgrade, upgrade)
-            .SetTransition(TipitoAction.Open, open)
-            .SetTransition(TipitoAction.Success, success)
-            .SetTransition(TipitoAction.Wait, wait)
+            .SetTransition(IAAction.PickUp, pickup)
+            .SetTransition(IAAction.Create, create)
+            .SetTransition(IAAction.Attack, attack)
+            .SetTransition(IAAction.SuperAttack, super_attack)
+            .SetTransition(IAAction.Upgrade, upgrade)
+            .SetTransition(IAAction.Success, success)
 			.Done();
         
-		_fsm = new EventFSM<TipitoAction>(idle, any);
+		_fsm = new EventFSM<IAAction>(idle, any);
     }
 
     private GOAPState GetCurState()
@@ -427,10 +400,10 @@ public class Tipito : PlayerAndIABaseBehaviour
 
     internal void NextStep()
     {
-        _fsm.Feed(TipitoAction.NextStep);
+        _fsm.Feed(IAAction.NextStep);
     }
 
-    public void SetPlan(List<Tuple<TipitoAction, Item>> plan) {
+    public void SetPlan(List<Tuple<IAAction, Item>> plan) {
 		_plan = plan;
 		//_fsm.Feed(TipitoAction.NextStep);
 	}
