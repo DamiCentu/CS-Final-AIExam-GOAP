@@ -306,8 +306,8 @@ public class Tipito : PlayerAndIABaseBehaviour
         {
 
             Debug.Log("pickup.OnExit");
-            _ent.OnHitItem -= PerformPickUp;
             action_started = false;
+            _ent.OnHitItem -= PerformPickUp;
             Debug.Log("pickup.OnExit finish");
         };
 
@@ -322,25 +322,35 @@ public class Tipito : PlayerAndIABaseBehaviour
         open.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformOpen; };
         open.OnExit += a => _ent.OnHitItem -= PerformOpen;
 
-        create.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformCreate; };
+        create.OnEnter += a => {
+            print("entro en el create.onEnter");
+            _ent.GoTo(_target.transform.position);
+            _ent.OnHitItem += PerformCreate;
+            print("salgo en el create.onEnter");
+        };
         create.OnExit += a =>{
             action_started = false;
             _ent.OnHitItem -= PerformCreate;
         };
 
 
-        attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformAttack; };
+        attack.OnEnter += a => {
+            _ent.GoTo(_target.transform.position);
+            _ent.OnHitItem += PerformAttack;
+            print("Entre en attack on enter");
+        };
         attack.OnExit += a =>
         {
             action_started = false;
             _ent.OnHitItem -= PerformAttack;
+            print("Entre en attack on enter");
         };
 
        super_attack.OnEnter += a => { _ent.GoTo(_target.transform.position); _ent.OnHitItem += PerformSuperAttack; };
         super_attack.OnExit += a =>
         {
-            _ent.OnHitItem -= PerformSuperAttack;
             action_started = false;
+            _ent.OnHitItem -= PerformSuperAttack;
         };
 
 

@@ -21,7 +21,7 @@ public class Defense : MonoBehaviour {
 
         modelDefense.SetActive(false);
         upgradeDefense.SetActive(false);
-        _modelDefenseCollider.enabled = false;
+      //  _modelDefenseCollider.enabled = false;
     }
 
     internal int ReceiveDamage(int normalDamage)
