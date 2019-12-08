@@ -29,10 +29,10 @@ public class Cannon : MonoBehaviour {
 
     public void AttackNormal()
     {
-        target.ReceiveDamage(normalDamage);
+        target.ReceiveDamage(transform.position ,normalDamage);
     }
     public void AttackSpecial()
     {
-        target.ReceiveDamage(upgradedDamage);
+        target.ReceiveDamage(transform.position, upgradedDamage);
     }
 }

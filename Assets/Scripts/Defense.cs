@@ -31,6 +31,7 @@ public class Defense : MonoBehaviour {
         text.text = life.ToString();
         if (life <= 0) {
             modelDefense.SetActive(false);
+            GetComponent<Item>().Created = false;
             int extra_damage = life;
             life = 0;
             text.text = "";
