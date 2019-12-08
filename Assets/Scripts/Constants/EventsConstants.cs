@@ -33,8 +33,7 @@ public static class EventsConstants {
     //---------------------------------------------------------------
     public const string SET_MAP_NODE_UNACCESABLE = "mapNodesUpdate";
 
-
-    public const string PLAYER_UPGRADE_DEFENSE = "PLAYER_UPGRADE_DEFENSE";
+    
     public const string PLAYER_REQUEST_CREATE = "playerRequestCreate";
     public const string PLAYER_REQUEST_UPGRADE = "playerRequestUpgrade";
     public const string PLAYER_REQUEST_MINING = "playerRequestMining";
@@ -44,6 +43,8 @@ public static class EventsConstants {
     public const string PLAYER_UPGRADE = "playerUpgrade";
     public const string PLAYER_MINING = "playerMining";
     public const string PLAYER_ATTACK = "playerAttack";
+
+    public const string PLAYER_DEFENSE_DESTROYED= "playerDefenseDestroyed";
 
     public const string BLOCK_PLAYER_IF_FALSE = "blockOrUnblockPlayer";
 

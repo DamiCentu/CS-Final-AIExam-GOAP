@@ -31,7 +31,10 @@ public class Defense : MonoBehaviour {
         text.text = life.ToString();
         if (life <= 0) {
             modelDefense.SetActive(false);
-            GetComponent<Item>().Created = false;
+            var item = GetComponent<Item>();
+            item.Created = false;
+            if (item.owner == "player")
+                EventsManager.TriggerEvent(EventsConstants.PLAYER_DEFENSE_DESTROYED);
             int extra_damage = life;
             life = 0;
             text.text = "";

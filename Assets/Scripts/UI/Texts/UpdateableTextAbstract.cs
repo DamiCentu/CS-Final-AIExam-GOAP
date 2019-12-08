@@ -16,6 +16,7 @@ public class UpdateableTextAbstract : MonoBehaviour {
 
     protected void SetText(string textString)
     {
-        text.text = textString;
+        if(text)
+            text.text = textString;
     }
 }
