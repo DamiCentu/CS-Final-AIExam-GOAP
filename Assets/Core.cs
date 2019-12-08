@@ -11,16 +11,23 @@ public class Core : MonoBehaviour {
     public Defense defense;
 	void Start () {
         _life = default_life;
-	}
-	
+        EventsManager.SubscribeToEvent(EventsConstants.IA_GET_DEFENSE, UpdateIaLife );
+    }
+
+    private void UpdateIaLife(object[] parameterContainer)
+    {
+
+        text.text = (_life ).ToString();
+    }
 
     internal void ReceiveDamage(int normalDamage)
     {
         int damage_left =defense.ReceiveDamage(normalDamage);
         if(damage_left<0)_life += damage_left;
-        text.text = (_life + defense.life).ToString();
+        text.text = (_life ).ToString();
         Item i = this.GetComponent<Item>();
-        if (i.name == "ia")   EventsManager.TriggerEvent(EventsConstants.IA_IS_BEING_ATTACK, new object[] { (_life + defense.life) });
+        if (i.owner == "ia")
+            EventsManager.TriggerEvent(EventsConstants.IA_IS_BEING_ATTACK, new object[] { (_life + defense.life) });
     }
 
     internal float GetLife()

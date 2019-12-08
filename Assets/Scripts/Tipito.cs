@@ -68,10 +68,10 @@ public class Tipito : PlayerAndIABaseBehaviour
     {
         if (!planAgresive) {
             planAgresive = true;
-            shouldRePlan = true;
             Planner p = GetComponent<Planner>();
             p.SetAggressivePlan(true);
         }
+         shouldRePlan = true;
     }
 
     private void StartDefensivePlan()
@@ -79,10 +79,10 @@ public class Tipito : PlayerAndIABaseBehaviour
         if (planAgresive)
         {
             planAgresive = false;
-            shouldRePlan = true;
             Planner p = GetComponent<Planner>();
             p.SetAggressivePlan(false);
         }
+        shouldRePlan = true;
     }
 
     private void IALifeChange(object[] parameterContainer)
@@ -91,9 +91,11 @@ public class Tipito : PlayerAndIABaseBehaviour
         if (life <= 75)
         {
             StartDefensivePlan();
+            print("me pongo en plan defensivo");
         }
         else
         {
+            print("me pongo en plan agresivo");
             StartAgressivePlan();
         }
     }
@@ -138,8 +140,8 @@ public class Tipito : PlayerAndIABaseBehaviour
 
 
         if (item.type == ItemType.Defense) {
-            EventsManager.TriggerEvent(EventsConstants.IA_CREATE_DEFENSE);
             var defense = item.GetComponent<Defense>();
+            defense.Create();
             defense.Create();
             structures["Defense"] = true;
             EventsManager.TriggerEvent(EventsConstants.UI_UPDATE_GOLD_IA, new object[] { _gold });
