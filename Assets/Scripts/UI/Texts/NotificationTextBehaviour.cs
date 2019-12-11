@@ -27,6 +27,12 @@ public class NotificationTextBehaviour : UpdateableTextAbstract
 
     void HandleText(string text)
     {
+        foreach (var queuedText in textsQueue)
+        {
+            if (queuedText == text)
+                return;
+        }
+
         textsQueue.Enqueue(text);
         if (!_routineRunning)
         {
