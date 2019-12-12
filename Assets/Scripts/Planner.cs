@@ -47,14 +47,7 @@ public class Planner : MonoBehaviour {
         List<GOAPAction> actions = CreatePossibleActionsList();
         if (firstTime)
         {
-
-            initial.intValues["hasGold"] = 0; 
-            initial.boolValues["hasDefense"] = false;
-            initial.boolValues["hasCannon"] = false;
-            initial.boolValues["UpgradeCannon"] = false;
-            initial.boolValues["UpgradeDefense"] = false;
-            initial.floatValues["EnemyLife"] = 100f;
-            initial.strignValues["bullet"] = "";
+            initial.worldSpace = new WorldSpace();
         }
         else { print("recalculo con los valore snuevos"); }
 
@@ -140,9 +133,7 @@ public class Planner : MonoBehaviour {
         List<GOAPAction> actions = CreatePossibleActionsList();
 
         GOAPState goal = new GOAPState();
-
         SetGoals(goal);
-        ;
 
         var typeDict = new Dictionary<string, ItemType>() {
 
@@ -187,12 +178,12 @@ public class Planner : MonoBehaviour {
     {
         if (aggressivePlan)
         {
-            goal.floatValues["EnemyLife"] = 0;
-            goal.boolValues["hasCannon"] = true;
+            goal.worldSpace.enemyLife = 0;
+            goal.worldSpace.cannon = "cannon";
         }
         else {
-            goal.boolValues["hasDefense"] = true;
-            goal.boolValues["UpgradeDefense"] = true;
+            goal.worldSpace.hasDefense = true;
+            goal.worldSpace.defenseIsRepaired = true;
         }
     }
 
@@ -201,77 +192,35 @@ public class Planner : MonoBehaviour {
         return new List<GOAPAction>()
         {
             new GOAPAction("Pickup mine")
-            .Effect((GOAPState state) => {
-                state.intValues["hasGold"] += 15;
-
-            }),
+            .Effect((WorldSpace w) =>  w.PickUpMine()),
 
             new GOAPAction("Create defense")
-            .Pre((GOAPState state) => {
-                return state.intValues["hasGold"] >= 20;
-            })
-            .Effect((GOAPState state) => {
-                state.boolValues["hasDefense"] = true;
-                state.intValues["hasGold"] -=20;
-            }),
-            new GOAPAction("Create workTable")
-                .Pre((GOAPState state) => {
-                    return state.strignValues["bullet"] == "" &&
-                            state.intValues["hasGold"] >= 10;
-                })
-                .Effect((GOAPState state) => {
-                    state.strignValues["bullet"] = "Normal Bullet";
-                    state.intValues["hasGold"] -=10;
-                }),
+            .Pre((WorldSpace w) => w.CanCreateDefense())
+            .Effect((WorldSpace w) =>  w.CreateDefense()),
+
+             new GOAPAction("Create workTable")
+            .Pre((WorldSpace w) => w.CanCreateWorktable())
+            .Effect((WorldSpace w) =>  w.CreateWorktable()),
 
             new GOAPAction("SuperAttack cannon")
-                .Pre((GOAPState state) => {
-                    return state.strignValues["bullet"] == "Normal Bullet"  &&
-                            state.boolValues["UpgradeCannon"] == true;
-                })
-                .Effect((GOAPState state) => {
-                        state.strignValues["bullet"] = "";
-                        state.floatValues["EnemyLife"] -= 40;
-                }),
+            .Pre((WorldSpace w) => w.CanSuperAttack())
+            .Effect((WorldSpace w) =>  w.SuperAttack()),
 
             new GOAPAction("Attack cannon")
-                .Pre((GOAPState state) => {
-                    return state.strignValues["bullet"] == "Normal Bullet"  &&
-                            state.boolValues["hasCannon"] == true;
-                })
-                .Effect((GOAPState state) => {
-                        state.strignValues["bullet"] = "";
-                        state.floatValues["EnemyLife"] -= 25;
-                }),
+            .Pre((WorldSpace w) => w.CanAttack())
+            .Effect((WorldSpace w) =>  w.Attack()),
 
             new GOAPAction("Create cannon")
-                .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 20;
-                })
-                .Effect((GOAPState state) => {
-                    state.boolValues["hasCannon"] = true;
-                    state.intValues["hasGold"] -=20;
-                }),
+            .Pre((WorldSpace w) => w.CanCreateCannon())
+            .Effect((WorldSpace w) =>  w.CreateCannon()),
 
             new GOAPAction("Upgrade defense")
-                .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 40 &&
-                    state.boolValues["hasDefense"] == true;
-                })
-                .Effect((GOAPState state) => {
-                    state.boolValues["UpgradeDefense"] = true;
-                    state.intValues["hasGold"] -=40;
-                }),
+            .Pre((WorldSpace w) => w.CanUpgradedefense())
+            .Effect((WorldSpace w) =>  w.Upgradedefense()),
 
             new GOAPAction("Upgrade cannon")
-                .Pre((GOAPState state) => {
-                    return state.intValues["hasGold"] >= 40 &&
-                    state.boolValues["hasCannon"] == true;
-                })
-                .Effect((GOAPState state) => {
-                    state.boolValues["UpgradeCannon"] = true;
-                    state.intValues["hasGold"] -=40;
-                })
+            .Pre((WorldSpace w) => w.CanUpgradeCannon())
+            .Effect((WorldSpace w) =>  w.UpgradeCannon()),
         };
     }
 

@@ -387,14 +387,19 @@ public class IABehaviour : PlayerAndIABaseBehaviour
 
     private GOAPState GetCurState()
     {
-        GOAPState cur = new GOAPState();
-        cur.intValues["hasGold"] = _gold;
-        cur.boolValues["hasDefense"] = structures["Defense"];
-        cur.boolValues["hasCannon"] = structures["Cannon"];
-        cur.boolValues["UpgradeCannon"] = structures["CannonUpgraded"];
-        cur.boolValues["UpgradeDefense"] = structures["DefenseUpgraded"];
-        cur.floatValues["EnemyLife"] = playerCore.GetLife();
-    cur.strignValues["bullet"] = bullets>0? "Normal Bullet":"";
+        WorldSpace world = new WorldSpace();
+
+        world.gold = _gold;
+        world.hasDefense = structures["Defense"];
+        world.cannon = structures["Cannon"] ? "cannon" : "";
+        if (structures["CannonUpgraded"])
+        {
+            world.cannon = "cannon upgraded";
+        }
+        world.defenseIsRepaired = structures["DefenseUpgraded"];
+        world.enemyLife = playerCore.GetLife();
+        world.bullet = bullets;
+        GOAPState cur = new GOAPState(world);
         return cur;
     }
 

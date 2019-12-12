@@ -19,19 +19,20 @@ public class GoapMiniTest : MonoBehaviour
             from,
             to,
             (curr, goal) => {
-                if (aggressive_heuristic) return curr.floatValues["EnemyLife"] - goal.floatValues["EnemyLife"];
-                else {
-                    int h_value = 2;
-                    if (from.boolValues["hasDefense"]) h_value--;
-                    if (from.boolValues["UpgradeDefense"]) h_value--;
-                    return h_value;
-                }
-            } ,
+                if (aggressive_heuristic) return curr.AgressiveHeuristic(goal.worldSpace);
+                else return curr.PassiveHeuristic(goal.worldSpace);
+            },
 
-            curr => to.boolValues.All(kv => kv.In(curr.boolValues))&&
+            curr =>
+            {
+                if (aggressive_heuristic) return curr.AgressiveComparison(to.worldSpace);
+                else return from.PassiveComparison(to.worldSpace);
+            },
+            
+            /*to.boolValues.All(kv => kv.In(curr.boolValues))&&
                     to.intValues.All(i => i.In(curr.intValues)) &&
                     to.floatValues.All(i => i.In(curr.floatValues)) &&
-                    to.strignValues.All(i => i.In(curr.strignValues)) ,
+                    to.stringValues.All(i => i.In(curr.stringValues)) ,*/
 
             curr =>
             {
@@ -42,7 +43,7 @@ public class GoapMiniTest : MonoBehaviour
 
                 //return actions.Where(action => action.preconditionsBool.All(kv => kv.In(curr.boolValues)) && 
                               // action.preconditionsInt.All(k=> k.In(curr.intValues)))
-                return actions.Where(action => action.preConditions.All(f => f(curr) == true))
+                return actions.Where(action => action.preConditions.All(f => f(curr.worldSpace) == true))
                              .Aggregate(new FList<AStarNormal<GOAPState>.Arc>(), (possibleList, action) =>
                               {
                                   var newState = new GOAPState(curr);
@@ -50,7 +51,7 @@ public class GoapMiniTest : MonoBehaviour
                               //    newState.intValues.UpdateWith(action.effectsInt);
                                   action.effects.ForEach((f) =>
                                   {
-                                      f(newState);
+                                      f(newState.worldSpace);
                                   });
                                   newState.generatingAction = action;
                                   newState.step = curr.step+1;
