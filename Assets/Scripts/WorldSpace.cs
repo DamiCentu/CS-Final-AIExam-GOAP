@@ -68,7 +68,7 @@ public class WorldSpace {
 
     internal bool PassiveComparison(WorldSpace other)
     {
-        return this.hasDefense == other.hasDefense;
+        return this.hasDefense == other.hasDefense && this.defenseIsRepaired == other.defenseIsRepaired;
     }
 
     internal bool AgressiveComparison(WorldSpace other)
@@ -122,9 +122,10 @@ public class WorldSpace {
     internal float PassiveHeuristic(WorldSpace other)
     {
         
-        int h_value = 2;
+        float h_value = 100;
         if (!hasDefense) h_value--;
         if (!defenseIsRepaired) h_value--;
+        h_value -= enemyLife - other.enemyLife;
         return h_value;
     }
 

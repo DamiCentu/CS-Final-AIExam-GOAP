@@ -13,7 +13,7 @@ public class GoapMiniTest : MonoBehaviour
 {
 	public static IEnumerable<GOAPAction> GoapRun(GOAPState from, GOAPState to, IEnumerable<GOAPAction> actions, bool aggressive_heuristic)
     {
-        int watchdog = 200;
+        int watchdog = 300;
 
         var seq = AStarNormal<GOAPState>.Run(
             from,
