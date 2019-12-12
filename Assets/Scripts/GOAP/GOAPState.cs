@@ -14,16 +14,17 @@ public class GOAPState
     public GOAPState(GOAPAction gen = null)
     {
         generatingAction = gen;
+        worldSpace = new WorldSpace();
     }
     public GOAPState(WorldSpace world, GOAPAction gen = null)
     {
-        worldSpace = world;
+        worldSpace = new WorldSpace(world);
         generatingAction = gen;
     }
 
     public GOAPState(GOAPState source, GOAPAction gen = null)
     {
-        this.worldSpace = source.worldSpace;
+        worldSpace = new WorldSpace(source.worldSpace);
         generatingAction = gen;
     }
 

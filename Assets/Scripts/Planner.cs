@@ -56,12 +56,12 @@ public class Planner : MonoBehaviour {
 
         ;
 
-        StartPlannig(everything, actions, goal);
+        StartPlanning(everything, actions, goal);
         yield return new WaitForSeconds(.1f);
 
     }
 
-    private void StartPlannig(IEnumerable<Item> everything, List<GOAPAction> actions, GOAPState goal)
+    private void StartPlanning(IEnumerable<Item> everything, List<GOAPAction> actions, GOAPState goal)
     {
         var typeDict = new Dictionary<string, ItemType>() {
 
@@ -87,6 +87,8 @@ public class Planner : MonoBehaviour {
             print("Couldn't plan");
         else
         {
+            var li = plan.Select(x => x.name).ToList();
+            print(li);
             _ia.SetPlan(
                 plan
                 .Select(pa => pa.name)

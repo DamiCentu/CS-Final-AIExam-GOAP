@@ -12,6 +12,18 @@ public class WorldSpace {
     public float enemyLife = 100f;
     public int bullet = 0;
 
+    public WorldSpace()
+    {
+    }
+    public WorldSpace(WorldSpace other)
+    {
+        gold = other.gold;
+        cannon = other.cannon;
+        hasDefense = other.hasDefense;
+        defenseIsRepaired = other.defenseIsRepaired;
+        enemyLife = other.enemyLife;
+        bullet = other.bullet;
+    }
 
     internal void PickUpMine()
     {

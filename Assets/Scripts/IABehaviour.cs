@@ -381,7 +381,7 @@ public class IABehaviour : PlayerAndIABaseBehaviour
             .SetTransition(IAAction.Upgrade, upgrade)
             .SetTransition(IAAction.Success, success)
 			.Done();
-        
+        print("new fsm!");
 		_fsm = new EventFSM<IAAction>(idle, any);
     }
 
@@ -415,6 +415,8 @@ public class IABehaviour : PlayerAndIABaseBehaviour
 
     void Update ()
     {
-        _fsm.Update();
+        if (_fsm != null)
+            _fsm.Update();
+        else print("aca anda!");
 	}
 }
