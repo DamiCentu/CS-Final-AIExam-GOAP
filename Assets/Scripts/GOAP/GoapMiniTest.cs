@@ -26,7 +26,7 @@ public class GoapMiniTest : MonoBehaviour
             curr =>
             {
                 if (aggressive_heuristic) return curr.AgressiveComparison(to.worldSpace);
-                else return from.PassiveComparison(to.worldSpace);
+                else return curr.PassiveComparison(to.worldSpace);
             },
             
             /*to.boolValues.All(kv => kv.In(curr.boolValues))&&
