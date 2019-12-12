@@ -27,7 +27,7 @@ public class WorldSpace {
 
     internal void PickUpMine()
     {
-        gold += 20;
+        gold +=15 ;
     }
 
     internal bool CanCreateDefense()
@@ -131,7 +131,7 @@ public class WorldSpace {
     internal void SuperAttack()
     {
         bullet--;
-        enemyLife -= 40;
+        enemyLife -= 60;
     }
 
     internal float AgressiveHeuristic(WorldSpace other)
